@@ -33,11 +33,11 @@ class WSTwitterService extends TwitterService {
                   (response.json \ "friends_count").as[Long]
                 )
             } else {
-              throw new RuntimeException(s"Could not retrieve counts for Twitter user $userName")
+              throw new TwitterServiceException(s"Could not retrieve counts for Twitter user $userName")
             }
         }
     }.getOrElse {
-      Future.failed(new IllegalStateException("You did not correctly configure the Twitter credentials"))
+      Future.failed(new TwitterServiceException("You did not correctly configure the Twitter credentials"))
     }
 
   }
@@ -55,3 +55,4 @@ class WSTwitterService extends TwitterService {
 
 }
 
+case class TwitterServiceException(message: String) extends RuntimeException(message)

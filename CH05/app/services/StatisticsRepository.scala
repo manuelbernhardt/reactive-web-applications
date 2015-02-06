@@ -7,6 +7,7 @@ import reactivemongo.bson._
 import play.api.Play.current
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.control.NonFatal
 
 trait StatisticsRepository {
 
@@ -59,7 +60,11 @@ class MongoStatisticsRepository extends StatisticsRepository {
       .sort(order)
       .one[StoredCounts]
       .map { counts => counts getOrElse StoredCounts(DateTime.now, userName, 0, 0) }
+  } recover {
+    case NonFatal(t) =>
+      throw new CountRetrievalException(userName, t)
   }
 }
 
+case class CountRetrievalException(userName: String, cause: Throwable) extends RuntimeException("Could not read counts for " + userName, cause)
 case class CountStorageException(counts: StoredCounts) extends RuntimeException
