@@ -3,6 +3,7 @@ package services
 import org.joda.time.{Period, DateTime}
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.control.NonFatal
 
 trait StatisticsService {
 
@@ -48,10 +49,37 @@ class DefaultStatisticsService(statisticsRepository: StatisticsRepository, twitt
     val storedCounts: Future[Unit] = counts.flatMap(storeCounts)
     val publishedMessage: Future[Unit] = counts.flatMap(publishMessage)
 
-    for {
+    val result = for {
       _ <- storedCounts
       _ <- publishedMessage
     } yield {}
+
+    result recoverWith {
+      case CountStorageException(countsToStore) =>
+        retryStoring(countsToStore, attemptNumber = 0)
+    } recover {
+      case CountStorageException(countsToStore) =>
+        throw StatisticsServiceFailed("We couldn't save the statistics to our database. Next time it will work!")
+      case CountRetrievalException(user, cause) =>
+        throw StatisticsServiceFailed("We have a problem with our database. Sorry!")
+      case TwitterServiceException(cause) =>
+        throw StatisticsServiceFailed("We have a problem contacting Twitter. Sorry!")
+      case NonFatal(t) =>
+        throw StatisticsServiceFailed("We have an unknown problem. Sorry!")
+    }
+
+  }
+
+  private def retryStoring(counts: StoredCounts, attemptNumber: Int)(implicit ec: ExecutionContext): Future[Unit] = {
+    if (attemptNumber < 3) {
+      statisticsRepository.storeCounts(counts).recoverWith {
+        case NonFatal(t) => retryStoring(counts, attemptNumber + 1)
+      }
+    } else {
+      Future.failed(CountStorageException(counts))
+    }
   }
 
 }
+
+case class StatisticsServiceFailed(message: String) extends RuntimeException(message)
