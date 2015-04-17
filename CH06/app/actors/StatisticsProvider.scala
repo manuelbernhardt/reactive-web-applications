@@ -1,6 +1,6 @@
 package actors
 
-import akka.actor.SupervisorStrategy.{Escalate, Restart}
+import akka.actor.SupervisorStrategy.{Stop, Escalate, Restart}
 import akka.actor._
 import messages.ComputeReach
 import reactivemongo.core.errors.ConnectionException
@@ -17,6 +17,8 @@ class StatisticsProvider extends Actor with ActorLogging {
     followersCounter = context.actorOf(Props[UserFollowersCounter], name = "userFollowersCounter")
     storage = context.actorOf(Props[Storage], name = "storage")
     reachComputer = context.actorOf(Props[TweetReachComputer], name = "tweetReachComputer")
+
+    context.watch(storage)
   }
 
   override def supervisorStrategy: SupervisorStrategy =
@@ -31,6 +33,18 @@ class StatisticsProvider extends Actor with ActorLogging {
     case reach @ ComputeReach(_) =>
       log.info("Forwarding ComputeReach message to the reach computer")
       reachComputer forward reach
+    case Terminated(terminatedStorageRef) =>
+      context.system.scheduler.scheduleOnce(1.minute, self, ReviveStorage)
+      context.become({
+        case reach @ ComputeReach(_) =>
+          sender() ! ServiceUnavailable
+        case ReviveStorage =>
+          storage = context.actorOf(Props[Storage], name = "storage")
+          context.unbecome()
+      })
   }
 
 }
+
+case object ServiceUnavailable
+case object ReviveStorage
