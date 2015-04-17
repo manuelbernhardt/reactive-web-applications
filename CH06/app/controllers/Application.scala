@@ -1,12 +1,27 @@
 package controllers
 
+import akka.util.Timeout
+import messages.{TweetReach, ComputeReach}
 import play.api._
+import play.api.Play.current
+import play.api.libs.concurrent.Akka
+import play.api.libs.concurrent.Execution.Implicits._
 import play.api.mvc._
+
+import akka.pattern.ask
+import scala.concurrent.duration._
+
 
 object Application extends Controller {
 
-  def index = Action {
-    Ok(views.html.index("Your new application is ready."))
+  lazy val statisticsProvider = Akka.system.actorSelection("akka://application/user/statisticsProvider")
+
+  def computeReach(tweet_id: String) = Action.async {
+    implicit val timeout = Timeout(10.seconds)
+    val eventuallyReach = statisticsProvider ? ComputeReach(BigInt(tweet_id))
+    eventuallyReach.map { reach =>
+      Ok(reach.asInstanceOf[TweetReach].score.toString)
+    }
   }
 
 }

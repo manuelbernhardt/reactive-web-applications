@@ -1,5 +1,6 @@
 import actors._
 import akka.actor._
+import messages.ComputeReach
 import play.api.libs.concurrent.Akka
 import play.api._
 import play.api.Play.current
