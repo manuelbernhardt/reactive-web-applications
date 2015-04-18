@@ -1,7 +1,7 @@
 package actors
 
 import akka.actor.{ActorLogging, Actor}
-import messages.{ReachNotStored, ReachStored, StoreReach}
+import messages.{ReachStored, StoreReach}
 import org.joda.time.DateTime
 import reactivemongo.api.{MongoConnection, MongoDriver}
 import reactivemongo.api.collections.default.BSONCollection
@@ -89,14 +89,12 @@ class Storage extends Actor with ActorLogging {
         collection.save(StoredReach(DateTime.now, tweet_id, score)).map { lastError =>
           if(lastError.inError) {
             currentWrites.remove(tweet_id)
-            originalSender ! ReachNotStored(tweet_id)
           } else {
             originalSender ! ReachStored(tweet_id)
           }
         } recover {
           case _ =>
             currentWrites.remove(tweet_id)
-            originalSender ! ReachNotStored(tweet_id)
         }
       }
   }

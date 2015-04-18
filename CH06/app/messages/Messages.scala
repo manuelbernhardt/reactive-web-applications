@@ -8,4 +8,3 @@ case class FollowerCount(tweet_id: BigInt, userId: BigInt, followersCount: Int)
 
 case class StoreReach(tweet_id: BigInt, score: Int)
 case class ReachStored(tweet_id: BigInt)
-case class ReachNotStored(tweet_id: BigInt)
