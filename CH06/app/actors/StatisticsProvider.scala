@@ -1,8 +1,9 @@
 package actors
 
-import akka.actor.SupervisorStrategy.{Stop, Escalate, Restart}
+import akka.actor.SupervisorStrategy.{Escalate, Restart}
 import akka.actor._
 import messages.ComputeReach
+import org.joda.time.{Interval, DateTime}
 import reactivemongo.core.errors.ConnectionException
 import scala.concurrent.duration._
 
@@ -11,6 +12,8 @@ class StatisticsProvider extends Actor with ActorLogging {
   var reachComputer: ActorRef = _
   var storage: ActorRef = _
   var followersCounter: ActorRef = _
+
+  implicit val ec = context.dispatcher
 
   override def preStart(): Unit = {
     log.info("Starting StatisticsProvider")
@@ -42,9 +45,22 @@ class StatisticsProvider extends Actor with ActorLogging {
           storage = context.actorOf(Props[Storage], name = "storage")
           context.unbecome()
       })
+    case TwitterRateLimitReached(reset) =>
+      context.system.scheduler.scheduleOnce(
+        new Interval(DateTime.now, reset).toDurationMillis.millis,
+        self,
+        ResumeService
+      )
+      context.become({
+        case reach @ ComputeReach(_) =>
+          sender() ! ServiceUnavailable
+        case ResumeService =>
+          context.unbecome()
+      })
   }
 
 }
 
 case object ServiceUnavailable
 case object ReviveStorage
+case object ResumeService

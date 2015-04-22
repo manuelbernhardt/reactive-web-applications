@@ -2,6 +2,7 @@ package actors
 
 import akka.actor.{ActorLogging, Actor}
 import messages.{FollowerCount, FetchFollowerCount}
+import org.joda.time.DateTime
 import play.api.libs.oauth.OAuthCalculator
 import play.api.libs.ws.WS
 import play.api.Play.current
@@ -20,6 +21,9 @@ class UserFollowersCounter extends Actor with ActorLogging with TwitterCredentia
       fetchFollowerCount(tweet_id, user) pipeTo originalSender
   }
 
+  val LimitRemaining = "X-Rate-Limit-Remaining"
+  val LimitReset = "X-Rate-Limit-Reset"
+
   private def fetchFollowerCount(tweet_id: BigInt, userId: BigInt) = {
     credentials.map {
       case (consumerKey, requestToken) =>
@@ -28,6 +32,21 @@ class UserFollowersCounter extends Actor with ActorLogging with TwitterCredentia
           .withQueryString("user_id" -> userId.toString)
           .get().map { response =>
             if (response.status == 200) {
+
+              val rateLimit = for {
+                remaining <- response.header(LimitRemaining)
+                reset <- response.header(LimitReset)
+              } yield {
+                (remaining.toInt, new DateTime(reset.toLong * 1000))
+              }
+
+              rateLimit.foreach { case (remaining, reset) =>
+                log.info(s"Rate limit: $remaining requests remaining, window resets at $reset")
+                if (remaining < 10) {
+                  context.parent ! TwitterRateLimitReached(reset)
+                }
+              }
+
               val count = (response.json \ "followers_count").as[Int]
               FollowerCount(tweet_id, userId, count)
             } else {
@@ -40,3 +59,5 @@ class UserFollowersCounter extends Actor with ActorLogging with TwitterCredentia
   }
 
 }
+
+case class TwitterRateLimitReached(reset: DateTime)
