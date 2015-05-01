@@ -7,24 +7,40 @@ import play.api.libs.oauth.OAuthCalculator
 import play.api.libs.ws.WS
 import play.api.Play.current
 
-import akka.pattern.pipe
+import akka.dispatch.ControlMessage
+import akka.pattern.{CircuitBreaker, pipe}
 
 import scala.concurrent.Future
+
+import scala.concurrent.duration._
 
 class UserFollowersCounter extends Actor with ActorLogging with TwitterCredentials {
 
   implicit val ec = context.dispatcher
 
+  val breaker =
+    new CircuitBreaker(context.system.scheduler,
+      maxFailures = 5,
+      callTimeout = 2.seconds,
+      resetTimeout = 1.minute).onOpen(
+        log.info("Circuit breaker open")
+      ).onHalfOpen(
+        log.info("Circuit breaker half-open")
+      ).onClose(
+        log.info("Circuit breaker closed")
+      )
+
   def receive = {
     case FetchFollowerCount(tweet_id, user) =>
       val originalSender = sender()
-      fetchFollowerCount(tweet_id, user) pipeTo originalSender
+      breaker.withCircuitBreaker(fetchFollowerCount(tweet_id, user)) pipeTo originalSender
   }
+
 
   val LimitRemaining = "X-Rate-Limit-Remaining"
   val LimitReset = "X-Rate-Limit-Reset"
 
-  private def fetchFollowerCount(tweet_id: BigInt, userId: BigInt) = {
+  private def fetchFollowerCount(tweet_id: BigInt, userId: BigInt): Future[FollowerCount] = {
     credentials.map {
       case (consumerKey, requestToken) =>
         WS.url("https://api.twitter.com/1.1/users/show.json")
@@ -42,6 +58,9 @@ class UserFollowersCounter extends Actor with ActorLogging with TwitterCredentia
 
               rateLimit.foreach { case (remaining, reset) =>
                 log.info(s"Rate limit: $remaining requests remaining, window resets at $reset")
+                if (remaining < 170) {
+                  Thread.sleep(10000)
+                }
                 if (remaining < 10) {
                   context.parent ! TwitterRateLimitReached(reset)
                 }
@@ -60,4 +79,4 @@ class UserFollowersCounter extends Actor with ActorLogging with TwitterCredentia
 
 }
 
-case class TwitterRateLimitReached(reset: DateTime)
+case class TwitterRateLimitReached(reset: DateTime) extends ControlMessage
