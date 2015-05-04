@@ -9,6 +9,8 @@ CREATE TABLE User (
     PRIMARY KEY (id)
 );
 
+INSERT INTO User VALUES (1, "bob@marley.org", PASSWORD("secret"), "Bob", "Marley");
+
 # --- !Downs
 
 DROP TABLE User;
