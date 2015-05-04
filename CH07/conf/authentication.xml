@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<configuration xmlns="http://www.jooq.org/xsd/jooq-codegen-3.6.0.xsd">
+  <jdbc>
+    <driver>com.mysql.jdbc.Driver</driver>
+    <url>jdbc:mysql://localhost:3306/authentication</url>
+    <user>root</user>
+    <password></password>
+  </jdbc>
+  <generator>
+    <name>org.jooq.util.ScalaGenerator</name>
+    <database>
+      <name>org.jooq.util.mysql.MySQLDatabase</name>
+      <inputSchema>authentication</inputSchema>
+      <includes>.*</includes>
+      <excludes></excludes>
+    </database>
+    <target>
+      <packageName>generated</packageName>
+      <directory>target/scala-2.11/src_managed/main</directory>
+    </target>
+  </generator>
+</configuration>
