@@ -1,0 +1,11 @@
+@(form: Form[(String, String)])
+
+@form.globalError.map { error =>
+    <p>@error.message</p>
+}
+
+@helper.form(controllers.routes.Application.authenticate()) {
+    @helper.inputText(form("email"))
+    @helper.inputPassword(form("password"))
+    <button type="submit">Login</button>
+}
