@@ -2,6 +2,7 @@ package controllers
 
 import play.api._
 import play.api.Play.current
+import play.api.cache.Cache
 import play.api.mvc._
 import play.api.data._
 import play.api.data.Forms._
@@ -18,7 +19,7 @@ import scala.concurrent.Future
 object Application extends Controller {
 
   def index = Authenticated { request =>
-    Ok(views.html.index(request.firstName))
+    Ok(views.html.index(request.user.getFirstname))
   }
 
   def login = Action { implicit request =>
@@ -44,9 +45,7 @@ object Application extends Controller {
 
           if (users.size() > 0) {
             Redirect(routes.Application.index()).withSession(
-              Authenticated.USER_ID -> users.get(0).getId.toString,
-              Authenticated.FIRST_NAME -> users.get(0).getFirstname,
-              Authenticated.LAST_NAME -> users.get(0).getLastname
+              Authenticated.USER_ID -> users.get(0).getId.toString
             )
           } else {
             BadRequest(
@@ -66,21 +65,18 @@ object Application extends Controller {
 
 }
 
-case class AuthenticatedRequest[A](userId: Long, firstName: String, lastName: String)
+case class AuthenticatedRequest[A](userId: Long, user: UserRecord)
 
 object Authenticated extends ActionBuilder[AuthenticatedRequest] with Results {
 
   val USER_ID = "userid"
-  val FIRST_NAME = "firstname"
-  val LAST_NAME = "lastname"
 
   override def invokeBlock[A](request: Request[A], block: (AuthenticatedRequest[A]) => Future[Result]): Future[Result] = {
     val authenticated = for {
       id <- request.session.get(USER_ID)
-      firstName <- request.session.get(FIRST_NAME)
-      lastName <- request.session.get(LAST_NAME)
+      user <- fetchUser(id.toLong)
     } yield {
-      AuthenticatedRequest[A](id.toLong, firstName, lastName)
+      AuthenticatedRequest[A](id.toLong, user)
     }
 
     authenticated.map { authenticatedRequest =>
@@ -91,4 +87,18 @@ object Authenticated extends ActionBuilder[AuthenticatedRequest] with Results {
       }
     }
   }
+
+  def fetchUser(id: Long): Option[UserRecord] =
+    Cache.getAs[UserRecord](id.toString).map { user =>
+      Some(user)
+    } getOrElse {
+      DB.withConnection { connection =>
+        val context = DSL.using(connection, SQLDialect.MYSQL)
+        val user = Option(context.selectFrom[UserRecord](USER).where(USER.ID.equal(id)).fetchOne())
+        user.map { u =>
+          Cache.set(u.getId.toString, u)
+        }
+        user
+      }
+    }
 }

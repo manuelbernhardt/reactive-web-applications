@@ -6,8 +6,12 @@ lazy val `ch07` = (project in file(".")).enablePlugins(PlayScala)
 
 scalaVersion := "2.11.1"
 
+resolvers += "Spy Repository" at "http://files.couchbase.com/maven2"
+
 libraryDependencies ++= Seq(
   jdbc,
+  cache,
+  "com.github.mumoshu" %% "play2-memcached" % "0.6.0",
   "mysql" % "mysql-connector-java" % "5.1.35",
   "org.jooq" % "jooq" % "3.6.0",
   "org.jooq" % "jooq-codegen-maven" % "3.6.0",
