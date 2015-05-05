@@ -1,3 +1,4 @@
 GET      /                      controllers.Application.index()
 GET      /login                 controllers.Application.login()
+GET      /logout                controllers.Application.logout()
 POST     /authenticate          controllers.Application.authenticate()

@@ -25,6 +25,10 @@ object Application extends Controller {
     Ok(views.html.login(loginForm))
   }
 
+  def logout = Action { implicit request =>
+    Redirect(routes.Application.index()).withNewSession
+  }
+
   def authenticate = Action { implicit request =>
     loginForm.bindFromRequest.fold(
       formWithErrors =>
