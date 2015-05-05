@@ -1,2 +1,3 @@
+GET      /                      controllers.Application.index()
 GET      /login                 controllers.Application.login()
 POST     /authenticate          controllers.Application.authenticate()
