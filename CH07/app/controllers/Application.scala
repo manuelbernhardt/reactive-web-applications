@@ -1,5 +1,6 @@
 package controllers
 
+import helpers.Database
 import play.api._
 import play.api.Play.current
 import play.api.cache.Cache
@@ -30,12 +31,14 @@ object Application extends Controller {
     Redirect(routes.Application.index()).withNewSession
   }
 
-  def authenticate = Action { implicit request =>
+  def authenticate = Action.async { implicit request =>
     loginForm.bindFromRequest.fold(
       formWithErrors =>
-        BadRequest(views.html.login(formWithErrors)),
+        Future.successful {
+          BadRequest(views.html.login(formWithErrors))
+        },
       login =>
-        DB.withConnection { c =>
+        Database.query { c =>
           val context = DSL.using(c, SQLDialect.MYSQL)
           val users = context
             .selectFrom[UserRecord](USER)
