@@ -5,3 +5,5 @@ These are the examples of the second chapter of the book "Reactive Web-Applicati
 You can run the example application with
 
     ./activator run
+
+In order to run this example you will need to get Twitter application codes at dev.twitter.com and replace them in `conf/application.conf` 
