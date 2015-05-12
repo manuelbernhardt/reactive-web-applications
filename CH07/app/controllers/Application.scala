@@ -4,11 +4,11 @@ import helpers.Database
 import play.api._
 import play.api.Play.current
 import play.api.cache.Cache
+import play.api.libs.Crypto
 import play.api.mvc._
 import play.api.data._
 import play.api.data.Forms._
 import play.api.db._
-import org.jooq.util.mysql.MySQLDSL._
 import org.jooq.SQLDialect
 import org.jooq.impl.DSL
 import generated.Tables._
@@ -39,11 +39,11 @@ object Application extends Controller {
         },
       login =>
         Database.query { c =>
-          val context = DSL.using(c, SQLDialect.MYSQL)
+          val context = DSL.using(c, SQLDialect.POSTGRES_9_4)
           val users = context
             .selectFrom[UserRecord](USER)
             .where(USER.EMAIL.equal(login._1))
-            .and(USER.PASSWORD.equal(password(login._2)))
+            .and(USER.PASSWORD.equal(Crypto.encryptAES(login._2)))
             .fetch()
 
           if (users.size() > 0) {
@@ -96,7 +96,7 @@ object Authenticated extends ActionBuilder[AuthenticatedRequest] with Results {
       Some(user)
     } getOrElse {
       DB.withConnection { connection =>
-        val context = DSL.using(connection, SQLDialect.MYSQL)
+        val context = DSL.using(connection, SQLDialect.POSTGRES_9_4)
         val user = Option(context.selectFrom[UserRecord](USER).where(USER.ID.equal(id)).fetchOne())
         user.map { u =>
           Cache.set(u.getId.toString, u)

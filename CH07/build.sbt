@@ -12,7 +12,7 @@ libraryDependencies ++= Seq(
   jdbc,
   cache,
   "com.github.mumoshu" %% "play2-memcached" % "0.6.0",
-  "mysql" % "mysql-connector-java" % "5.1.35",
+  "org.postgresql" % "postgresql" % "9.4-1201-jdbc41",
   "org.jooq" % "jooq" % "3.6.0",
   "org.jooq" % "jooq-codegen-maven" % "3.6.0",
   "org.jooq" % "jooq-meta" % "3.6.0"
