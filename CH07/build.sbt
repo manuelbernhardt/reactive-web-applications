@@ -18,7 +18,9 @@ libraryDependencies ++= Seq(
   "org.jooq" % "jooq" % "3.6.0",
   "org.jooq" % "jooq-codegen-maven" % "3.6.0",
   "org.jooq" % "jooq-meta" % "3.6.0",
-  "com.typesafe.akka" %% "akka-actor" % "2.4-SNAPSHOT"
+  "joda-time" % "joda-time" % "2.7",
+  "com.typesafe.akka" %% "akka-actor" % "2.4-SNAPSHOT",
+  "com.typesafe.akka" %% "akka-persistence-experimental" % "2.4-SNAPSHOT"
 )
 
 unmanagedResourceDirectories in Test <+=  baseDirectory ( _ /"target/web/public/test" )
