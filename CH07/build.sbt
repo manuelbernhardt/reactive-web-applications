@@ -8,6 +8,8 @@ scalaVersion := "2.11.1"
 
 resolvers += "Spy Repository" at "http://files.couchbase.com/maven2"
 
+resolvers += "Akka Snapshots" at "http://repo.akka.io/snapshots"
+
 libraryDependencies ++= Seq(
   jdbc,
   cache,
@@ -15,7 +17,8 @@ libraryDependencies ++= Seq(
   "org.postgresql" % "postgresql" % "9.4-1201-jdbc41",
   "org.jooq" % "jooq" % "3.6.0",
   "org.jooq" % "jooq-codegen-maven" % "3.6.0",
-  "org.jooq" % "jooq-meta" % "3.6.0"
+  "org.jooq" % "jooq-meta" % "3.6.0",
+  "com.typesafe.akka" %% "akka-actor" % "2.4-SNAPSHOT"
 )
 
 unmanagedResourceDirectories in Test <+=  baseDirectory ( _ /"target/web/public/test" )

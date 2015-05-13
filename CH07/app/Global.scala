@@ -1,13 +1,17 @@
+import actors.SMSService
+import akka.actor.Props
 import org.jooq.SQLDialect
 import org.jooq.impl.DSL
 import play.api.db.DB
 import play.api.libs.Crypto
+import play.api.libs.concurrent.Akka
 import play.api.{Application, GlobalSettings}
 import generated.Tables._
 import play.api.Play.current
 
 object Global extends GlobalSettings {
   override def onStart(app: Application): Unit = {
+    Akka.system.actorOf(Props[SMSService])
     DB.withTransaction { tx =>
       val context = DSL.using(tx, SQLDialect.POSTGRES_9_4)
       if (context.fetchCount(USER) == 0) {
