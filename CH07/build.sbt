@@ -15,15 +15,14 @@ resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repos
 libraryDependencies ++= Seq(
   jdbc,
   cache,
+  ws,
   "com.github.mumoshu" %% "play2-memcached" % "0.6.0",
   "org.postgresql" % "postgresql" % "9.4-1201-jdbc41",
   "org.jooq" % "jooq" % "3.6.0",
   "org.jooq" % "jooq-codegen-maven" % "3.6.0",
   "org.jooq" % "jooq-meta" % "3.6.0",
   "joda-time" % "joda-time" % "2.7",
-  "com.typesafe.akka" %% "akka-actor" % "2.4-SNAPSHOT",
-  "com.typesafe.akka" %% "akka-persistence-experimental" % "2.4-SNAPSHOT",
-  "com.github.ironfish" %% "akka-persistence-mongo-casbah"  % "0.7.5"
+  "com.github.ironfish" %% "akka-persistence-mongo-casbah"  % "0.7.6-SNAPSHOT"
 )
 
 unmanagedResourceDirectories in Test <+=  baseDirectory ( _ /"target/web/public/test" )

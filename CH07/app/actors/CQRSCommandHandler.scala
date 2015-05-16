@@ -14,23 +14,24 @@ class CQRSCommandHandler extends PersistentActor with ActorLogging {
   }
 
   override def receiveCommand: Receive = {
-      case command: Command =>
-        val phoneNumber = command.phoneNumber
-        context.child(phoneNumber).map { reference =>
-          reference forward command
-        } getOrElse {
-          persist(ClientHandlerCreated(phoneNumber)) { event =>
-            handleEvent(event)
-            context.child(phoneNumber).foreach { _ forward command }
-          }
-        }
-    }
+    case RegisterUser(phoneNumber, username) =>
+      persist(UserRegistered(phoneNumber, username))(handleEvent)
+    case command: Command =>
+      context.child(command.phoneNumber).map { reference =>
+        reference forward command
+      } getOrElse {
+        sender() ! "User unknown"
+      }
+  }
 
-    def handleEvent(event: Event) = event match {
-      case ClientHandlerCreated(phoneNumber, _) =>
-        context.actorOf(
-          props = Props(classOf[ClientCommandHandler], phoneNumber),
-          name = phoneNumber
-        )
+  def handleEvent(event: Event): Unit = event match {
+    case registered @ UserRegistered(phoneNumber, userName, _) =>
+      context.actorOf(
+        props = Props(classOf[ClientCommandHandler], phoneNumber, userName),
+        name = phoneNumber
+      )
+      if (recoveryFinished) {
+        sender() ! registered
+      }
     }
 }

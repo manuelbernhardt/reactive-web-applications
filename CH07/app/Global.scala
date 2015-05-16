@@ -11,7 +11,7 @@ import play.api.Play.current
 
 object Global extends GlobalSettings {
   override def onStart(app: Application): Unit = {
-    Akka.system.actorOf(Props[SMSService])
+    Akka.system.actorOf(Props[SMSService], name = "sms")
     DB.withTransaction { tx =>
       val context = DSL.using(tx, SQLDialect.POSTGRES_9_4)
       if (context.fetchCount(USER) == 0) {
