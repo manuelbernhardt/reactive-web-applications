@@ -11,7 +11,7 @@ trait Event {
 }
 
 
-case class SubscribeMentions(phoneNumber: String) extends Command
+case class SubscribeMentions(phoneNumber: String, userName: String) extends Command
 case class UnsubscribeMentions(phoneNumber: String) extends Command
 
 case class ClientHandlerCreated(phoneNumber: String, timestamp: DateTime = DateTime.now) extends Event
