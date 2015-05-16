@@ -10,6 +10,8 @@ resolvers += "Spy Repository" at "http://files.couchbase.com/maven2"
 
 resolvers += "Akka Snapshots" at "http://repo.akka.io/snapshots"
 
+resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/releases"
+
 libraryDependencies ++= Seq(
   jdbc,
   cache,
@@ -20,7 +22,8 @@ libraryDependencies ++= Seq(
   "org.jooq" % "jooq-meta" % "3.6.0",
   "joda-time" % "joda-time" % "2.7",
   "com.typesafe.akka" %% "akka-actor" % "2.4-SNAPSHOT",
-  "com.typesafe.akka" %% "akka-persistence-experimental" % "2.4-SNAPSHOT"
+  "com.typesafe.akka" %% "akka-persistence-experimental" % "2.4-SNAPSHOT",
+  "com.github.ironfish" %% "akka-persistence-mongo-casbah"  % "0.7.5"
 )
 
 unmanagedResourceDirectories in Test <+=  baseDirectory ( _ /"target/web/public/test" )
