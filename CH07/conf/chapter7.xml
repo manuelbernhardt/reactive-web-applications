@@ -2,7 +2,7 @@
 <configuration xmlns="http://www.jooq.org/xsd/jooq-codegen-3.6.0.xsd">
   <jdbc>
     <driver>org.postgresql.Driver</driver>
-    <url>jdbc:postgresql://localhost/authentication</url>
+    <url>jdbc:postgresql://localhost/chapter7</url>
     <user>manu</user>
     <password></password>
   </jdbc>

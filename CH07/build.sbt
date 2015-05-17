@@ -30,7 +30,7 @@ unmanagedResourceDirectories in Test <+=  baseDirectory ( _ /"target/web/public/
 val generateJOOQ = taskKey[Seq[File]]("Generate JooQ classes")
 
 val generateJOOQTask = (sourceManaged, dependencyClasspath in Compile, runner in Compile, streams) map { (src, cp, r, s) =>
-  toError(r.run("org.jooq.util.GenerationTool", cp.files, Array("conf/authentication.xml"), s.log))
+  toError(r.run("org.jooq.util.GenerationTool", cp.files, Array("conf/chapter7.xml"), s.log))
   ((src / "main/generated") ** "*.scala").get
 }
 
