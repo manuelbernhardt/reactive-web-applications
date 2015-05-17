@@ -32,6 +32,7 @@ class CQRSCommandHandler extends PersistentActor with ActorLogging {
       )
       if (recoveryFinished) {
         sender() ! registered
+        context.system.eventStream.publish(registered)
       }
     }
 }

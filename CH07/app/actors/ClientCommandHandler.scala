@@ -97,6 +97,9 @@ class ClientCommandHandler(phoneNumber: String, userName: String) extends Persis
       log.info(s"Subscribed $phoneNumber to mentions")
       if (recoveryFinished) {
         sender() ! subscribed
+        context.system.eventStream.publish(
+          ClientEvent(phoneNumber, userName, subscribed)
+        )
       }
 
     case received @ MentionReceived(id, created_on, from, text, _) =>
@@ -106,6 +109,9 @@ class ClientCommandHandler(phoneNumber: String, userName: String) extends Persis
         subscribedSMSHandler.foreach { handler =>
           handler ! received
         }
+        context.system.eventStream.publish(
+          ClientEvent(phoneNumber, userName, received)
+        )
       }
 
     case MentionAcknowledged(id, _) =>

@@ -21,4 +21,6 @@ case class MentionsSubscribed(timestamp: DateTime = DateTime.now) extends Event
 case class MentionReceived(id: String, created_on: DateTime, from: String, text: String, timestamp: DateTime = DateTime.now) extends Event
 case class MentionAcknowledged(id: String, timestamp: DateTime = DateTime.now) extends Event
 
+case class ClientEvent(phoneNumber: String, userName: String, event: Event, timestamp: DateTime = DateTime.now) extends Event
+
 case class InvalidCommand(reason: String)
