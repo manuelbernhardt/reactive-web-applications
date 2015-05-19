@@ -38,8 +38,7 @@ object Application extends Controller {
           BadRequest(views.html.login(formWithErrors))
         },
       login =>
-        Database.query { c =>
-          val context = DSL.using(c, SQLDialect.POSTGRES_9_4)
+        Database.query { context =>
           val users = context
             .selectFrom[UserRecord](USER)
             .where(USER.EMAIL.equal(login._1))
