@@ -10,6 +10,16 @@ trait Event {
   val timestamp: DateTime
 }
 
+trait Query
+
+case class MentionsToday(phoneNumber: String) extends Query
+case class MentionsPastWeek(phoneNumber: String) extends Query
+
+trait QueryResult
+case class DailyMentionsCount(count: Int) extends QueryResult
+case class WeeklyMentionsCount(count: Int) extends QueryResult
+case object QueryFailed extends QueryResult
+
 case class RegisterUser(phoneNumber: String, userName: String) extends Command
 case class ConnectUser(phoneNumber: String) extends Command
 case class SubscribeMentions(phoneNumber: String) extends Command
