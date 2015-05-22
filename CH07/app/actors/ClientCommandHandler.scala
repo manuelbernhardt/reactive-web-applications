@@ -90,7 +90,7 @@ class ClientCommandHandler(phoneNumber: String, userName: String) extends Persis
       lastSeenMentionTime = Some(timestamp)
       subscriptionScheduler = Some(context.system.scheduler.schedule(
         initialDelay = 10.seconds,
-        interval = 10.seconds,
+        interval = 60.seconds,
         receiver = self,
         message = CheckMentions
       )(context.dispatcher))
