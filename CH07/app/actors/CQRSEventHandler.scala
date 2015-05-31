@@ -26,7 +26,7 @@ class CQRSEventHandler extends Actor with ActorLogging {
         context.insertInto(MENTION_SUBSCRIPTIONS)
           .columns(MENTION_SUBSCRIPTIONS.USER_ID, MENTION_SUBSCRIPTIONS.CREATED_ON)
           .select(
-             context.select(TWITTER_USER.ID, DSL.`val`(new Timestamp(timestamp.getMillis)))
+             context.select(TWITTER_USER.ID, DSL.value(new Timestamp(timestamp.getMillis)))
                .from(TWITTER_USER)
                .where(
                  TWITTER_USER.PHONE_NUMBER.equal(phoneNumber)
@@ -49,10 +49,10 @@ class CQRSEventHandler extends Actor with ActorLogging {
           .select(
              context.select(
                TWITTER_USER.ID,
-               DSL.`val`(new Timestamp(timestamp.getMillis)),
-               DSL.`val`(id),
-               DSL.`val`(from),
-               DSL.`val`(text)
+               DSL.value(new Timestamp(timestamp.getMillis)),
+               DSL.value(id),
+               DSL.value(from),
+               DSL.value(text)
              )
              .from(TWITTER_USER)
              .where(
