@@ -5,7 +5,7 @@ import akka.io.Tcp._
 import akka.util.{ByteString, Timeout}
 import scala.concurrent.duration._
 
-class SMSHandler extends Actor with ActorLogging {
+class SMSHandler(connection: ActorRef) extends Actor with ActorLogging {
 
   implicit val timeout = Timeout(2.seconds)
 
@@ -21,11 +21,8 @@ class SMSHandler extends Actor with ActorLogging {
   val MessagePattern = """[\+]([0-9]*) (.*)""".r
   val RegistrationPattern = """register (.*)""".r
 
-  var connectionReference: ActorRef = _
-
   def receive = {
     case Received(data) =>
-      connectionReference = sender()
       log.info(s"Received message: ${data.utf8String}")
       data.utf8String.trim match {
         case MessagePattern(number, message) =>
@@ -35,20 +32,20 @@ class SMSHandler extends Actor with ActorLogging {
           sender() ! Write(ByteString("Invalid message format\n"))
       }
     case registered: UserRegistered =>
-      connectionReference ! Write(ByteString("Registration successful\n"))
+      connection ! Write(ByteString("Registration successful\n"))
     case subscribed: MentionsSubscribed =>
-      connectionReference ! Write(ByteString("Mentions subscribed\n"))
+      connection ! Write(ByteString("Mentions subscribed\n"))
     case InvalidCommand(reason) =>
-      connectionReference ! Write(ByteString(reason + "\n"))
+      connection ! Write(ByteString(reason + "\n"))
     case MentionReceived(id, created, from, text, _) =>
-      connectionReference ! Write(ByteString(s"mentioned by @$from: $text\n"))
+      connection ! Write(ByteString(s"mentioned by @$from: $text\n"))
       sender() ! AcknowledgeMention(id)
     case DailyMentionsCount(count) =>
-      connectionReference ! Write(ByteString(s"$count mentions today\n"))
+      connection ! Write(ByteString(s"$count mentions today\n"))
     case WeeklyMentionsCount(count) =>
-      connectionReference ! Write(ByteString(s"$count mentions this week\n"))
+      connection ! Write(ByteString(s"$count mentions this week\n"))
     case QueryFailed =>
-      connectionReference ! Write(ByteString("Sorry, we couldn't run your query\n"))
+      connection ! Write(ByteString("Sorry, we couldn't run your query\n"))
     case PeerClosed =>
       context stop self
   }

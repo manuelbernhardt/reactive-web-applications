@@ -20,8 +20,8 @@ class SMSServer extends Actor with ActorLogging {
       context stop self
 
     case Connected(remote, local) =>
-      val handler = context.actorOf(Props[SMSHandler])
       val connection = sender()
+      val handler = context.actorOf(Props(classOf[SMSHandler], connection))
       connection ! Register(handler)
   }
 }
