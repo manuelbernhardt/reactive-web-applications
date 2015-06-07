@@ -12,10 +12,10 @@ import play.api.Play.current
 object Global extends GlobalSettings {
   override def onStart(app: Application): Unit = {
     Akka.system.actorOf(Props[SMSService], name = "sms")
-    DB.withTransaction { tx =>
-      val context = DSL.using(tx, SQLDialect.POSTGRES_9_4)
-      if (context.fetchCount(USER) == 0) {
-        context
+    DB.withTransaction { connection =>
+      val sql = DSL.using(connection, SQLDialect.POSTGRES_9_4)
+      if (sql.fetchCount(USER) == 0) {
+        sql
           .insertInto(USER)
           .columns(USER.EMAIL, USER.FIRSTNAME, USER.LASTNAME, USER.PASSWORD)
           .values("bob@marley.org", "Bob", "Marley", Crypto.encryptAES("secret"))

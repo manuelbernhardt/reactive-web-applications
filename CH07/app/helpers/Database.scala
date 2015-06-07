@@ -9,16 +9,16 @@ import scala.concurrent.Future
 object Database {
 
   def query[A](block: DSLContext => A): Future[A] = Future {
-    DB.withConnection { c =>
-      val context = DSL.using(c, SQLDialect.POSTGRES_9_4)
-      block(context)
+    DB.withConnection { connection =>
+      val sql = DSL.using(connection, SQLDialect.POSTGRES_9_4)
+      block(sql)
     }
   }(Contexts.database)
 
   def withTransaction[A](block: DSLContext => A): Future[A] = Future {
-    DB.withTransaction { tx =>
-      val context = DSL.using(tx, SQLDialect.POSTGRES_9_4)
-      block(context)
+    DB.withTransaction { connection =>
+      val sql = DSL.using(connection, SQLDialect.POSTGRES_9_4)
+      block(sql)
     }
   }(Contexts.database)
 

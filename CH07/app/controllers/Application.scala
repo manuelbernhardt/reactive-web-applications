@@ -38,18 +38,18 @@ object Application extends Controller {
           BadRequest(views.html.login(formWithErrors))
         },
       login =>
-        Database.query { context =>
-          val users = context
-            .selectFrom[UserRecord](USER)
+        Database.query { sql =>
+          val user = Option(sql
+            .selectFrom(USER)
             .where(USER.EMAIL.equal(login._1))
             .and(USER.PASSWORD.equal(Crypto.encryptAES(login._2)))
-            .fetch()
+            .fetchOne())
 
-          if (users.size() > 0) {
+          user.map { u =>
             Redirect(routes.Application.index()).withSession(
-              Authenticated.USER_ID -> users.get(0).getId.toString
+              USER.ID.getName -> u.getId.toString
             )
-          } else {
+          } getOrElse {
             BadRequest(
               views.html.login(loginForm.withGlobalError("Wrong username or password"))
             )
@@ -71,11 +71,9 @@ case class AuthenticatedRequest[A](userId: Long, user: UserRecord)
 
 object Authenticated extends ActionBuilder[AuthenticatedRequest] with Results {
 
-  val USER_ID = "userid"
-
   override def invokeBlock[A](request: Request[A], block: (AuthenticatedRequest[A]) => Future[Result]): Future[Result] = {
     val authenticated = for {
-      id <- request.session.get(USER_ID)
+      id <- request.session.get(USER.ID.getName)
       user <- fetchUser(id.toLong)
     } yield {
       AuthenticatedRequest[A](id.toLong, user)
@@ -95,8 +93,8 @@ object Authenticated extends ActionBuilder[AuthenticatedRequest] with Results {
       Some(user)
     } getOrElse {
       DB.withConnection { connection =>
-        val context = DSL.using(connection, SQLDialect.POSTGRES_9_4)
-        val user = Option(context.selectFrom[UserRecord](USER).where(USER.ID.equal(id)).fetchOne())
+        val sql = DSL.using(connection, SQLDialect.POSTGRES_9_4)
+        val user = Option(sql.selectFrom[UserRecord](USER).where(USER.ID.equal(id)).fetchOne())
         user.map { u =>
           Cache.set(u.getId.toString, u)
         }

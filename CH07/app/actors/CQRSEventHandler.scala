@@ -5,7 +5,7 @@ import java.sql.Timestamp
 import akka.actor.{Actor, ActorLogging}
 import helpers.Database
 import generated.Tables._
-import org.jooq.impl.DSL
+import org.jooq.impl.DSL._
 
 class CQRSEventHandler extends Actor with ActorLogging {
 
@@ -15,18 +15,18 @@ class CQRSEventHandler extends Actor with ActorLogging {
 
   def receive = {
     case UserRegistered(phoneNumber, userName, timestamp) =>
-      Database.withTransaction { context =>
-        context.insertInto(TWITTER_USER)
+      Database.withTransaction { sql =>
+        sql.insertInto(TWITTER_USER)
           .columns(TWITTER_USER.CREATED_ON, TWITTER_USER.PHONE_NUMBER, TWITTER_USER.TWITTER_USER_NAME)
           .values(new Timestamp(timestamp.getMillis), phoneNumber, userName)
           .execute()
       }
     case ClientEvent(phoneNumber, userName, MentionsSubscribed(timestamp), _) =>
-      Database.withTransaction { context =>
-        context.insertInto(MENTION_SUBSCRIPTIONS)
+      Database.withTransaction { sql =>
+        sql.insertInto(MENTION_SUBSCRIPTIONS)
           .columns(MENTION_SUBSCRIPTIONS.USER_ID, MENTION_SUBSCRIPTIONS.CREATED_ON)
           .select(
-             context.select(TWITTER_USER.ID, DSL.value(new Timestamp(timestamp.getMillis)))
+             select(TWITTER_USER.ID, value(new Timestamp(timestamp.getMillis)))
                .from(TWITTER_USER)
                .where(
                  TWITTER_USER.PHONE_NUMBER.equal(phoneNumber)
@@ -37,8 +37,8 @@ class CQRSEventHandler extends Actor with ActorLogging {
           ).execute()
       }
     case ClientEvent(phoneNumber, userName, MentionReceived(id, created_on, from, text, timestamp), _) =>
-      Database.withTransaction { context =>
-        context.insertInto(MENTIONS)
+      Database.withTransaction { sql =>
+        sql.insertInto(MENTIONS)
           .columns(
             MENTIONS.USER_ID,
             MENTIONS.CREATED_ON,
@@ -47,12 +47,12 @@ class CQRSEventHandler extends Actor with ActorLogging {
             MENTIONS.TEXT
           )
           .select(
-             context.select(
+             select(
                TWITTER_USER.ID,
-               DSL.value(new Timestamp(timestamp.getMillis)),
-               DSL.value(id),
-               DSL.value(from),
-               DSL.value(text)
+               value(new Timestamp(timestamp.getMillis)),
+               value(id),
+               value(from),
+               value(text)
              )
              .from(TWITTER_USER)
              .where(

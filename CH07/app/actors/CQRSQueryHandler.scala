@@ -24,11 +24,11 @@ class CQRSQueryHandler extends Actor {
   }
 
   def countMentions(phoneNumber: String): Future[Int] =
-    Database.query { context =>
-      context.selectCount().from(MENTIONS).where(
-        MENTIONS.CREATED_ON.cast(PostgresDataType.DATE).greaterOrEqual(currentDate())
+    Database.query { sql =>
+      sql.selectCount().from(MENTIONS).where(
+        MENTIONS.CREATED_ON.greaterOrEqual(currentDate().cast(PostgresDataType.TIMESTAMP))
         .and(MENTIONS.USER_ID.equal(
-          context.select(TWITTER_USER.ID)
+          sql.select(TWITTER_USER.ID)
             .from(TWITTER_USER)
             .where(TWITTER_USER.PHONE_NUMBER.equal(phoneNumber)))
           )
