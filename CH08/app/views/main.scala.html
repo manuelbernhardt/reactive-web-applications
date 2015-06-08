@@ -1,0 +1,16 @@
+@(title: String)(content: Html)
+
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>@title</title>
+        <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/main.css")">
+        <link rel="shortcut icon" type="image/png" href="@routes.Assets.at("images/favicon.png")">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+    </head>
+    <body>
+        @content
+        @playscalajs.html.scripts("client")
+    </body>
+</html>
