@@ -20,7 +20,8 @@ lazy val client = (project in file("modules/client")).settings(
   ),
   jsDependencies ++= Seq(
     "org.webjars" % "angularjs" % "1.3.15" / "angular.min.js",
-    "org.webjars" % "angularjs" % "1.3.15" / "angular-route.min.js" dependsOn "angular.min.js"
+    "org.webjars" % "angularjs" % "1.3.15" / "angular-route.min.js" dependsOn "angular.min.js",
+    "org.webjars.bower" % "angular-websocket" % "1.0.13" / "angular-websocket.min.js"
   ),
   skip in packageJSDependencies := false
 
