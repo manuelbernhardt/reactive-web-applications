@@ -1,4 +1,10 @@
 <div>
-    <h1>{{ hello }}</h1>
-    <button type="button" class="button" ng-click="helloBack()">Hello back</button>
+    <canvas id="line"
+            class="chart chart-line"
+            data="monthlySubscriptions.data"
+            labels="monthlySubscriptions.labels"
+            series="monthlySubscriptions.series"
+            legend="true"
+            >
+    </canvas>
 </div>

@@ -7,4 +7,5 @@ GET     /                           controllers.Application.index
 GET     /graphs                     controllers.Application.graphs
 
 # Map static resources from the /public folder to the /assets URL path
+GET     /webjars/*file              controllers.WebJarAssets.at(file)
 GET     /assets/*file               controllers.Assets.at(path="/public", file)

@@ -7,7 +7,7 @@ import scala.scalajs.js.JSApp
 object DashboardApp extends JSApp {
 
   def main(): Unit = {
-    val module = angular.createModule("dashboard", Seq("ngRoute", "ngWebSocket"))
+    val module = angular.createModule("dashboard", Seq("ngRoute", "ngWebSocket", "chart.js"))
 
     module.serviceOf[GraphDataService]
 
