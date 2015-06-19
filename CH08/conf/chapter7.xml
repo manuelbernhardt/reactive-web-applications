@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<configuration xmlns="http://www.jooq.org/xsd/jooq-codegen-3.6.0.xsd">
+  <jdbc>
+    <driver>org.postgresql.Driver</driver>
+    <url>jdbc:postgresql://localhost/chapter7</url>
+    <user>manu</user>
+    <password></password>
+  </jdbc>
+  <generator>
+    <name>org.jooq.util.ScalaGenerator</name>
+    <database>
+      <name>org.jooq.util.postgres.PostgresDatabase</name>
+      <inputSchema>public</inputSchema>
+      <includes>.*</includes>
+      <excludes></excludes>
+    </database>
+    <target>
+      <packageName>generated</packageName>
+      <directory>target/scala-2.11/src_managed/main</directory>
+    </target>
+  </generator>
+</configuration>
