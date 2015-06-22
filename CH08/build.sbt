@@ -8,6 +8,7 @@ lazy val `ch08` = (project in file(".")).settings(
     "com.vmunier" %% "play-scalajs-scripts" % "0.2.2",
     "org.webjars" %% "webjars-play" % "2.4.0",
     "org.webjars.bower" % "angular-chart.js" % "0.7.1",
+    "org.webjars.bower" % "angular-growl-2" % "0.7.4",
     jdbc,
     "org.postgresql" % "postgresql" % "9.4-1201-jdbc41",
     "org.jooq" % "jooq" % "3.6.0",
@@ -30,7 +31,8 @@ lazy val client = (project in file("modules/client")).settings(
     "org.webjars.bower" % "angular-route" % "1.4.0" / "angular-route.min.js" dependsOn "angular.min.js",
     "org.webjars.bower" % "angular-websocket" % "1.0.13" / "dist/angular-websocket.min.js" dependsOn "angular.min.js",
     "org.webjars.bower" % "Chart.js" % "1.0.2" / "Chart.min.js",
-    "org.webjars.bower" % "angular-chart.js" % "0.7.1" / "dist/angular-chart.js" dependsOn "Chart.min.js"
+    "org.webjars.bower" % "angular-chart.js" % "0.7.1" / "dist/angular-chart.js" dependsOn "Chart.min.js",
+    "org.webjars.bower" % "angular-growl-2" % "0.7.4" /  "build/angular-growl.min.js"
   ),
   skip in packageJSDependencies := false
 ).enablePlugins(ScalaJSPlugin, ScalaJSPlay, SbtWeb)

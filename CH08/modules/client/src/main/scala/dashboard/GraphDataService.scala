@@ -5,8 +5,8 @@ import org.scalajs.dom._
 import scala.scalajs.js.{Dynamic, JSON}
 import scala.collection._
 
-class GraphDataService($websocket: WebsocketService) extends Service {
-  val dataStream = $websocket("ws://localhost:9000/graphs")
+class GraphDataService($websocket: WebsocketService, growl: GrowlService) extends Service {
+  val dataStream = $websocket("ws://localhost:9000/graphs", Dynamic.literal("reconnectIfNotNormalClose" -> true))
 
   private val callbacks =
     mutable.Map.empty[GraphType.Value, Dynamic => Unit]
@@ -24,6 +24,14 @@ class GraphDataService($websocket: WebsocketService) extends Service {
     } getOrElse {
       console.log(s"Unknown graph type $graphType")
     }
+  }
+
+  dataStream.onClose { (event: CloseEvent) =>
+    growl.error(s"Server connection closed, attempting to reconnect")
+  }
+
+  dataStream.onOpen { (event: Dynamic) =>
+    growl.info("Server connection established")
   }
 }
 
