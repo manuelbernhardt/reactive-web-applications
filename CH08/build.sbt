@@ -22,9 +22,11 @@ lazy val client = (project in file("modules/client")).settings(
   scalaVersion := scalaV,
   persistLauncher := true,
   persistLauncher in Test := false,
+  scalaJSStage in Global := FastOptStage,
   libraryDependencies ++= Seq(
     "org.scala-js" %%% "scalajs-dom" % "0.8.0",
-    "biz.enef"     %%% "scalajs-angulate" % "0.2"
+    "biz.enef"     %%% "scalajs-angulate" % "0.2",
+    "com.lihaoyi"  %%% "utest" % "0.3.1" % "test"
   ),
   jsDependencies ++= Seq(
     "org.webjars.bower" % "angular" % "1.4.0" / "angular.min.js",
@@ -32,9 +34,11 @@ lazy val client = (project in file("modules/client")).settings(
     "org.webjars.bower" % "angular-websocket" % "1.0.13" / "dist/angular-websocket.min.js" dependsOn "angular.min.js",
     "org.webjars.bower" % "Chart.js" % "1.0.2" / "Chart.min.js",
     "org.webjars.bower" % "angular-chart.js" % "0.7.1" / "dist/angular-chart.js" dependsOn "Chart.min.js",
-    "org.webjars.bower" % "angular-growl-2" % "0.7.4" /  "build/angular-growl.min.js"
+    "org.webjars.bower" % "angular-growl-2" % "0.7.4" /  "build/angular-growl.min.js",
+    RuntimeDOM % "test"
   ),
-  skip in packageJSDependencies := false
+  skip in packageJSDependencies := false,
+  testFrameworks += new TestFramework("utest.runner.Framework")
 ).enablePlugins(ScalaJSPlugin, ScalaJSPlay, SbtWeb)
 
 val generateJOOQ = taskKey[Seq[File]]("Generate JooQ classes")
@@ -43,6 +47,8 @@ val generateJOOQTask = (sourceManaged, dependencyClasspath in Compile, runner in
   toError(r.run("org.jooq.util.GenerationTool", cp.files, Array("conf/chapter7.xml"), s.log))
   ((src / "main/generated") ** "*.scala").get
 }
+
+logLevel in generateJOOQ := Level.Info
 
 generateJOOQ <<= generateJOOQTask
 
