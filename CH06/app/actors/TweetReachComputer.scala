@@ -52,6 +52,7 @@ class TweetReachComputer extends Actor with ActorLogging with TwitterCredentials
         userFollowersCounter ! FetchFollowerCount(fetchedRetweets.tweet_id, rt)
       }
 
+
     case count @ FollowerCount(tweet_id, user, followersCount) =>
       log.info(s"Received followers count for tweet $tweet_id")
       followerCountsByRetweet.keys.find(_.tweet_id == tweet_id).foreach { fetchedRetweets =>
@@ -64,6 +65,11 @@ class TweetReachComputer extends Actor with ActorLogging with TwitterCredentials
           fetchedRetweets.client ! TweetReach(tweet_id, score)
           storage ! StoreReach(tweet_id, score)
         }
+      }
+
+    case FollowerCountUnavailable(tweet_id, user) =>
+      followerCountsByRetweet.keys.find(_.tweet_id == tweet_id).foreach { fetchedRetweets =>
+        fetchedRetweets.client ! TweetReachCouldNotBeComputed
       }
 
     case ReachStored(tweet_id) =>

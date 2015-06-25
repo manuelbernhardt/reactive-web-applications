@@ -22,18 +22,22 @@ class UserFollowersCounter extends Actor with ActorLogging with TwitterCredentia
     new CircuitBreaker(context.system.scheduler,
       maxFailures = 5,
       callTimeout = 2.seconds,
-      resetTimeout = 1.minute).onOpen(
-        log.info("Circuit breaker open")
-      ).onHalfOpen(
-        log.info("Circuit breaker half-open")
-      ).onClose(
-        log.info("Circuit breaker closed")
-      )
+      resetTimeout = 1.minute
+    )
 
   def receive = {
     case FetchFollowerCount(tweet_id, user) =>
       val originalSender = sender()
-      breaker.withCircuitBreaker(fetchFollowerCount(tweet_id, user)) pipeTo originalSender
+      breaker.onOpen({
+        log.info("Circuit breaker open")
+        originalSender ! FollowerCountUnavailable(tweet_id, user)
+        context.parent ! UserFollowersCounterUnavailable
+      }).onHalfOpen(
+        log.info("Circuit breaker half-open")
+      ).onClose({
+        log.info("Circuit breaker closed")
+        context.parent ! UserFollowersCounterAvailable
+      }).withCircuitBreaker(fetchFollowerCount(tweet_id, user)) pipeTo originalSender
   }
 
 
@@ -80,3 +84,6 @@ class UserFollowersCounter extends Actor with ActorLogging with TwitterCredentia
 }
 
 case class TwitterRateLimitReached(reset: DateTime) extends ControlMessage
+case class FollowerCountUnavailable(tweet_id: BigInt, user: BigInt)
+case object UserFollowersCounterUnavailable extends ControlMessage
+case object UserFollowersCounterAvailable extends ControlMessage

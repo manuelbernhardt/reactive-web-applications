@@ -57,6 +57,13 @@ class StatisticsProvider extends Actor with ActorLogging {
         case ResumeService =>
           context.unbecome()
       })
+    case UserFollowersCounterUnavailable =>
+      context.become({
+        case UserFollowersCounterAvailable =>
+          context.unbecome()
+        case ComputeReach(_) =>
+          sender() ! ServiceUnavailable
+      })
   }
 
 }

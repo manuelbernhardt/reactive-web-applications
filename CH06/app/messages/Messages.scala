@@ -2,6 +2,7 @@ package messages
 
 case class ComputeReach(tweet_id: BigInt)
 case class TweetReach(tweet_id: BigInt, score: Int)
+case object TweetReachCouldNotBeComputed
 
 case class FetchFollowerCount(tweet_id: BigInt, userId: BigInt)
 case class FollowerCount(tweet_id: BigInt, userId: BigInt, followersCount: Int)

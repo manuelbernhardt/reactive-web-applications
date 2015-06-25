@@ -1,7 +1,7 @@
 package controllers
 
 import akka.util.Timeout
-import messages.{TweetReach, ComputeReach}
+import messages.{TweetReachCouldNotBeComputed, TweetReach, ComputeReach}
 import play.api._
 import play.api.Play.current
 import play.api.libs.concurrent.Akka
@@ -19,8 +19,11 @@ object Application extends Controller {
   def computeReach(tweet_id: String) = Action.async {
     implicit val timeout = Timeout(5.minutes)
     val eventuallyReach = statisticsProvider ? ComputeReach(BigInt(tweet_id))
-    eventuallyReach.map { reach =>
-      Ok(reach.asInstanceOf[TweetReach].score.toString)
+    eventuallyReach.map {
+      case tr: TweetReach =>
+        Ok(tr.score.toString)
+      case TweetReachCouldNotBeComputed =>
+        ServiceUnavailable("Sorry")
     }
   }
 
