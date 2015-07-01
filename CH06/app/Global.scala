@@ -9,7 +9,7 @@ object Global extends GlobalSettings {
   override def onStart(app: Application): Unit = {
     val providerReference: ActorRef =
       Akka.system.actorOf(
-        props = Props[StatisticsProvider].withDispatcher("control-aware-dispatcher"),
+        props = StatisticsProvider.props.withDispatcher("control-aware-dispatcher"),
         name = "statisticsProvider"
       )
   }

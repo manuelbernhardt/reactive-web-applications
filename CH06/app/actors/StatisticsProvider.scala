@@ -6,6 +6,7 @@ import messages.ComputeReach
 import org.joda.time.{Interval, DateTime}
 import reactivemongo.core.errors.ConnectionException
 import scala.concurrent.duration._
+import StatisticsProvider._
 
 class StatisticsProvider extends Actor with ActorLogging {
 
@@ -19,7 +20,7 @@ class StatisticsProvider extends Actor with ActorLogging {
     log.info("Starting StatisticsProvider")
     followersCounter = context.actorOf(Props[UserFollowersCounter], name = "userFollowersCounter")
     storage = context.actorOf(Props[Storage], name = "storage")
-    reachComputer = context.actorOf(Props[TweetReachComputer], name = "tweetReachComputer")
+    reachComputer = context.actorOf(TweetReachComputer.props(followersCounter, storage), name = "tweetReachComputer")
 
     context.watch(storage)
   }
@@ -33,41 +34,52 @@ class StatisticsProvider extends Actor with ActorLogging {
     }
 
   def receive = {
-    case reach @ ComputeReach(_) =>
+    case reach: ComputeReach =>
       log.info("Forwarding ComputeReach message to the reach computer")
       reachComputer forward reach
     case Terminated(terminatedStorageRef) =>
       context.system.scheduler.scheduleOnce(1.minute, self, ReviveStorage)
-      context.become({
-        case reach @ ComputeReach(_) =>
-          sender() ! ServiceUnavailable
-        case ReviveStorage =>
-          storage = context.actorOf(Props[Storage], name = "storage")
-          context.unbecome()
-      })
+      context.become(storageUnavailable)
     case TwitterRateLimitReached(reset) =>
       context.system.scheduler.scheduleOnce(
         new Interval(DateTime.now, reset).toDurationMillis.millis,
         self,
         ResumeService
       )
-      context.become({
-        case reach @ ComputeReach(_) =>
-          sender() ! ServiceUnavailable
-        case ResumeService =>
-          context.unbecome()
-      })
+      context.become(serviceUnavailable)
     case UserFollowersCounterUnavailable =>
-      context.become({
-        case UserFollowersCounterAvailable =>
-          context.unbecome()
-        case ComputeReach(_) =>
-          sender() ! ServiceUnavailable
-      })
+      context.become(followersCountUnavailable)
   }
+  
+  def storageUnavailable: Receive = {
+    case reach @ ComputeReach(_) =>
+      sender() ! ServiceUnavailable
+    case ReviveStorage =>
+      storage = context.actorOf(Props[Storage], name = "storage")
+      context.unbecome()
+  }
+
+  def serviceUnavailable: Receive = {
+    case reach: ComputeReach =>
+      sender() ! ServiceUnavailable
+    case ResumeService =>
+      context.unbecome()
+  }
+
+  def followersCountUnavailable: Receive = {
+      case UserFollowersCounterAvailable =>
+        context.unbecome()
+      case reach: ComputeReach =>
+        sender() ! ServiceUnavailable
+    }
 
 }
 
-case object ServiceUnavailable
-case object ReviveStorage
-case object ResumeService
+object StatisticsProvider {
+  def props = Props[StatisticsProvider]
+
+  case object ServiceUnavailable
+  case object ReviveStorage
+  case object ResumeService
+}
+

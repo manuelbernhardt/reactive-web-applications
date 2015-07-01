@@ -1,16 +1,17 @@
 package actors
 
-import akka.actor.{ActorLogging, Actor}
+import actors.Storage._
+import akka.actor.{ActorRef, ActorLogging, Actor}
+import akka.pattern.pipe
 import messages.{ReachStored, StoreReach}
 import org.joda.time.DateTime
 import reactivemongo.api.{MongoConnection, MongoDriver}
 import reactivemongo.api.collections.default.BSONCollection
 import reactivemongo.bson._
+import reactivemongo.core.commands.LastError
 import reactivemongo.core.errors.ConnectionException
 
-import scala.collection.mutable
-
-case class StoredReach(when: DateTime, tweet_id: BigInt, score: Int)
+case class StoredReach(when: DateTime, tweetId: BigInt, score: Int)
 
 object StoredReach {
 
@@ -36,8 +37,8 @@ object StoredReach {
 
     override def write(r: StoredReach): BSONDocument = BSONDocument(
       "when" -> BSONDateTime(r.when.getMillis),
-      "tweetId" -> r.tweet_id,
-      "tweet_id" -> r.tweet_id,
+      "tweetId" -> r.tweetId,
+      "tweet_id" -> r.tweetId,
       "score" -> r.score
     )
   }
@@ -49,25 +50,19 @@ class Storage extends Actor with ActorLogging {
   val Database = "twitterService"
   val ReachCollection = "ComputedReach"
 
-  var driver: MongoDriver = _
-  var connection: MongoConnection = _
-  var collection: BSONCollection = _
-
   implicit val executionContext = context.dispatcher
 
-  override def preStart(): Unit = {
-    driver = new MongoDriver(context.system)
-    connection = driver.connection(List("localhost"))
-    val db = connection.db(Database)
-    collection = db.collection[BSONCollection](ReachCollection)
-  }
+  val driver: MongoDriver = new MongoDriver(context.system)
+  var connection: MongoConnection = driver.connection(List("localhost"))
+  var db = connection.db(Database)
+  var collection: BSONCollection = db.collection[BSONCollection](ReachCollection)
 
   override def postRestart(reason: Throwable): Unit = {
     reason match {
       case ce: ConnectionException =>
         // try to obtain a brand new connection
         connection = driver.connection(List("localhost"))
-        val db = connection.db(Database)
+        db = connection.db(Database)
         collection = db.collection[BSONCollection](ReachCollection)
     }
     super.postRestart(reason)
@@ -78,25 +73,31 @@ class Storage extends Actor with ActorLogging {
     driver.close()
   }
   
-  val currentWrites = new mutable.HashSet[BigInt]
+  var currentWrites = Set.empty[BigInt]
 
   def receive = {
-    case StoreReach(tweet_id, score) =>
-      log.info(s"Storing reach for tweet $tweet_id")
-      val originalSender = sender()
-      if (!currentWrites.contains(tweet_id)) {
-        currentWrites += tweet_id
-        collection.save(StoredReach(DateTime.now, tweet_id, score)).map { lastError =>
-          if(lastError.inError) {
-            currentWrites.remove(tweet_id)
-          } else {
-            originalSender ! ReachStored(tweet_id)
-          }
-        } recover {
+    case StoreReach(tweetId, score) =>
+      log.info("Storing reach for tweet {}", tweetId)
+      if (!currentWrites.contains(tweetId)) {
+        currentWrites = currentWrites + tweetId
+        val originalSender = sender()
+        collection.save(StoredReach(DateTime.now, tweetId, score)).map { lastError =>
+          LastStorageError(lastError, tweetId, originalSender)
+        }.recover {
           case _ =>
-            currentWrites.remove(tweet_id)
-        }
+            currentWrites = currentWrites.filterNot(_ == tweetId)
+        } pipeTo self
       }
-  }
+    case LastStorageError(error, tweetId, client) =>
+      if(error.inError) {
+        currentWrites = currentWrites.filterNot(_ == tweetId)
+      } else {
+        client ! ReachStored(tweetId)
+      }
+    }
 
+}
+
+object Storage {
+  case class LastStorageError(error: LastError, tweetId: BigInt, client: ActorRef)
 }

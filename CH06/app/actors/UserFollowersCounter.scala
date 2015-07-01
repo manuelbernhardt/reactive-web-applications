@@ -26,25 +26,25 @@ class UserFollowersCounter extends Actor with ActorLogging with TwitterCredentia
     )
 
   def receive = {
-    case FetchFollowerCount(tweet_id, user) =>
+    case FetchFollowerCount(tweetId, user) =>
       val originalSender = sender()
       breaker.onOpen({
         log.info("Circuit breaker open")
-        originalSender ! FollowerCountUnavailable(tweet_id, user)
+        originalSender ! FollowerCountUnavailable(tweetId, user)
         context.parent ! UserFollowersCounterUnavailable
       }).onHalfOpen(
         log.info("Circuit breaker half-open")
       ).onClose({
         log.info("Circuit breaker closed")
         context.parent ! UserFollowersCounterAvailable
-      }).withCircuitBreaker(fetchFollowerCount(tweet_id, user)) pipeTo originalSender
+      }).withCircuitBreaker(fetchFollowerCount(tweetId, user)) pipeTo sender()
   }
 
 
   val LimitRemaining = "X-Rate-Limit-Remaining"
   val LimitReset = "X-Rate-Limit-Reset"
 
-  private def fetchFollowerCount(tweet_id: BigInt, userId: BigInt): Future[FollowerCount] = {
+  private def fetchFollowerCount(tweetId: BigInt, userId: BigInt): Future[FollowerCount] = {
     credentials.map {
       case (consumerKey, requestToken) =>
         WS.url("https://api.twitter.com/1.1/users/show.json")
@@ -61,8 +61,8 @@ class UserFollowersCounter extends Actor with ActorLogging with TwitterCredentia
               }
 
               rateLimit.foreach { case (remaining, reset) =>
-                log.info(s"Rate limit: $remaining requests remaining, window resets at $reset")
-                if (remaining < 170) {
+                log.info("Rate limit: {} requests remaining, window resets at {}", remaining, reset)
+                if (remaining < 50) {
                   Thread.sleep(10000)
                 }
                 if (remaining < 10) {
@@ -71,7 +71,7 @@ class UserFollowersCounter extends Actor with ActorLogging with TwitterCredentia
               }
 
               val count = (response.json \ "followers_count").as[Int]
-              FollowerCount(tweet_id, userId, count)
+              FollowerCount(tweetId, userId, count)
             } else {
               throw new RuntimeException(s"Could not retrieve followers count for user $userId")
             }
@@ -84,6 +84,6 @@ class UserFollowersCounter extends Actor with ActorLogging with TwitterCredentia
 }
 
 case class TwitterRateLimitReached(reset: DateTime) extends ControlMessage
-case class FollowerCountUnavailable(tweet_id: BigInt, user: BigInt)
+case class FollowerCountUnavailable(tweetId: BigInt, user: BigInt)
 case object UserFollowersCounterUnavailable extends ControlMessage
 case object UserFollowersCounterAvailable extends ControlMessage
