@@ -23,12 +23,12 @@ class SMSHandler(connection: ActorRef) extends Actor with ActorLogging {
 
   def receive = {
     case Received(data) =>
-      log.info(s"Received message: ${data.utf8String}")
+      log.info("Received message: {}", data.utf8String)
       data.utf8String.trim match {
         case MessagePattern(number, message) =>
           handleMessage(number, message)
         case other =>
-          log.warning(s"Invalid message $other")
+          log.warning("Invalid message {}", other)
           sender() ! Write(ByteString("Invalid message format\n"))
       }
     case registered: UserRegistered =>

@@ -14,7 +14,7 @@ class SMSServer extends Actor with ActorLogging {
 
   def receive = {
     case Bound(localAddress) =>
-      log.info(s"SMS server listening on $localAddress")
+      log.info("SMS server listening on {}", localAddress)
 
     case CommandFailed(_: Bind) =>
       context stop self

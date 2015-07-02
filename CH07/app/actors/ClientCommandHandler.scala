@@ -63,7 +63,7 @@ class ClientCommandHandler(phoneNumber: String, userName: String) extends Persis
       }
 
     case Mentions(mentions) =>
-      log.info(s"Fetched ${mentions.length} mentions")
+      log.info("Fetched {} mentions", mentions.length)
       val orderedMentions = mentions.sortBy(_._2.getMillis)
       orderedMentions.foreach { mention =>
         persist(MentionReceived(mention._1, mention._2, mention._3, mention._4))(handleEvent)
@@ -73,7 +73,7 @@ class ClientCommandHandler(phoneNumber: String, userName: String) extends Persis
       persist(MentionAcknowledged(id))(handleEvent)
 
     case ConnectUser(_) =>
-      log.info(s"$phoneNumber connected, about to send it ${unacknowledgedMentions.size} mentions")
+      log.info("{}connected, about to send it {} mentions", phoneNumber, unacknowledgedMentions.size)
       subscribedSMSHandler = Some(sender())
       unacknowledgedMentions.foreach { mention =>
         subscribedSMSHandler.foreach { handler =>
@@ -94,7 +94,7 @@ class ClientCommandHandler(phoneNumber: String, userName: String) extends Persis
         receiver = self,
         message = CheckMentions
       )(context.dispatcher))
-      log.info(s"Subscribed $phoneNumber to mentions")
+      log.info("Subscribed {} to mentions", phoneNumber)
       if (recoveryFinished) {
         sender() ! subscribed
         context.system.eventStream.publish(
@@ -115,7 +115,7 @@ class ClientCommandHandler(phoneNumber: String, userName: String) extends Persis
       }
 
     case MentionAcknowledged(id, _) =>
-      log.info(s"Acknowledged delivery of mention $id")
+      log.info("Acknowledged delivery of mention {}", id)
       unacknowledgedMentions = unacknowledgedMentions.filterNot(_.id == id)
   }
 

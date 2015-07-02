@@ -12,7 +12,7 @@ class SMSService extends Actor with ActorLogging {
   }
 
   def receive = {
-    case any =>
-      log.info(s"Received $any")
+    case message =>
+      log.info("Received {}", message)
   }
 }
