@@ -101,7 +101,6 @@ object TwitterStreamer {
 
       WS
         .url(url)
-        .withRequestTimeout(-1)
         .sign(OAuthCalculator(consumerKey, requestToken))
         .withQueryString("track" -> "cat")
         .get { response =>
