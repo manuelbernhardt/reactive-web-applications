@@ -1,15 +1,17 @@
 package controllers
 
+import javax.inject.Inject
+
 import akka.actor.{ Props, ActorRef, Actor }
-import models.Vocabulary
 import play.api.Play.current
 import play.api.mvc._
 import play.api.i18n.Lang
+import services.VocabularyService
 
-object Quizz extends Controller {
+class Quizz @Inject() (vocabulary: VocabularyService) extends Controller {
 
   def quizz(sourceLanguage: Lang, targetLanguage: Lang) = Action {
-    Vocabulary.findRandomVocabulary(sourceLanguage, targetLanguage).map { v =>
+    vocabulary.findRandomVocabulary(sourceLanguage, targetLanguage).map { v =>
       Ok(v.word)
     } getOrElse {
       NotFound
@@ -17,7 +19,7 @@ object Quizz extends Controller {
   }
 
   def check(sourceLanguage: Lang, word: String, targetLanguage: Lang, translation: String) = Action { request =>
-    val isCorrect = Vocabulary.verify(sourceLanguage, word, targetLanguage, translation)
+    val isCorrect = vocabulary.verify(sourceLanguage, word, targetLanguage, translation)
     val correctScore: Int = request.session.get("correct").map(_.toInt).getOrElse(0)
     val wrongScore = request.session.get("wrong").map(_.toInt).getOrElse(0)
     if (isCorrect) {
@@ -29,26 +31,26 @@ object Quizz extends Controller {
 
   def quizzEndpoint(sourceLang: Lang, targetLang: Lang) = WebSocket.acceptWithActor[String, String] { request =>
     out =>
-      QuizzActor.props(sourceLang, targetLang, out)
+      QuizzActor.props(sourceLang, targetLang, out, vocabulary)
   }
 
 }
 
-class QuizzActor(out: ActorRef, sourceLang: Lang, targetLang: Lang) extends Actor {
+class QuizzActor(out: ActorRef, sourceLang: Lang, targetLang: Lang, vocabulary: VocabularyService) extends Actor {
 
   private var word = ""
 
   override def preStart(): Unit = sendWord()
 
   def receive = {
-    case translation: String if Vocabulary.verify(sourceLang, word, targetLang, translation) =>
+    case translation: String if vocabulary.verify(sourceLang, word, targetLang, translation) =>
       out ! "Correct"
       sendWord()
     case _ => out ! "Incorrect, try again!"
   }
 
   def sendWord() = {
-    Vocabulary.findRandomVocabulary(sourceLang, targetLang).map { v =>
+    vocabulary.findRandomVocabulary(sourceLang, targetLang).map { v =>
       out ! s"Please translate '${v.word}'"
       word = v.word
     } getOrElse {
@@ -60,6 +62,6 @@ class QuizzActor(out: ActorRef, sourceLang: Lang, targetLang: Lang) extends Acto
 
 object QuizzActor {
 
-  def props(sourceLang: Lang, targetLang: Lang, out: ActorRef): Props =
-    Props(classOf[QuizzActor], out, sourceLang, targetLang)
+  def props(sourceLang: Lang, targetLang: Lang, out: ActorRef, vocabulary: VocabularyService): Props =
+    Props(classOf[QuizzActor], out, sourceLang, targetLang, vocabulary)
 }
