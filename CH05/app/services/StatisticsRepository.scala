@@ -39,7 +39,7 @@ object StoredCounts {
   }
 }
 
-class MongoStatisticsRepository @Inject() (reactiveMongo: DefaultReactiveMongoApi) extends StatisticsRepository {
+class MongoStatisticsRepository @Inject() (reactiveMongo: ReactiveMongoApi) extends StatisticsRepository {
 
   private val StatisticsCollection = "UserStatistics"
 
