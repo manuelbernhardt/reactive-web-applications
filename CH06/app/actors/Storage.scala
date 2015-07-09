@@ -5,10 +5,10 @@ import akka.actor.{ActorRef, ActorLogging, Actor}
 import akka.pattern.pipe
 import messages.{ReachStored, StoreReach}
 import org.joda.time.DateTime
+import reactivemongo.api.collections.bson.BSONCollection
+import reactivemongo.api.commands.WriteResult
 import reactivemongo.api.{MongoConnection, MongoDriver}
-import reactivemongo.api.collections.default.BSONCollection
 import reactivemongo.bson._
-import reactivemongo.core.commands.LastError
 import reactivemongo.core.errors.ConnectionException
 
 case class StoredReach(when: DateTime, tweetId: BigInt, score: Int)
@@ -45,14 +45,14 @@ object StoredReach {
 
 }
 
-class Storage extends Actor with ActorLogging {
+class Storage() extends Actor with ActorLogging {
 
   val Database = "twitterService"
   val ReachCollection = "ComputedReach"
 
   implicit val executionContext = context.dispatcher
 
-  val driver: MongoDriver = new MongoDriver(context.system)
+  val driver: MongoDriver = new MongoDriver
   var connection: MongoConnection = driver.connection(List("localhost"))
   var db = connection.db(Database)
   var collection: BSONCollection = db.collection[BSONCollection](ReachCollection)
@@ -81,7 +81,7 @@ class Storage extends Actor with ActorLogging {
       if (!currentWrites.contains(tweetId)) {
         currentWrites = currentWrites + tweetId
         val originalSender = sender()
-        collection.save(StoredReach(DateTime.now, tweetId, score)).map { lastError =>
+        collection.insert(StoredReach(DateTime.now, tweetId, score)).map { lastError =>
           LastStorageError(lastError, tweetId, originalSender)
         }.recover {
           case _ =>
@@ -99,5 +99,5 @@ class Storage extends Actor with ActorLogging {
 }
 
 object Storage {
-  case class LastStorageError(error: LastError, tweetId: BigInt, client: ActorRef)
+  case class LastStorageError(result: WriteResult, tweetId: BigInt, client: ActorRef)
 }
