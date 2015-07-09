@@ -1,10 +1,11 @@
 package services
 
+import javax.inject.Inject
+
 import org.joda.time.DateTime
 import play.modules.reactivemongo._
-import reactivemongo.api.collections.default.BSONCollection
+import reactivemongo.api.collections.bson.BSONCollection
 import reactivemongo.bson._
-import play.api.Play.current
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
@@ -38,14 +39,14 @@ object StoredCounts {
   }
 }
 
-class MongoStatisticsRepository extends StatisticsRepository {
+class MongoStatisticsRepository @Inject() (reactiveMongo: DefaultReactiveMongoApi) extends StatisticsRepository {
 
   private val StatisticsCollection = "UserStatistics"
 
-  private lazy val collection = ReactiveMongoPlugin.db.collection[BSONCollection](StatisticsCollection)
+  private lazy val collection = reactiveMongo.db.collection[BSONCollection](StatisticsCollection)
 
   override def storeCounts(counts: StoredCounts)(implicit ec: ExecutionContext): Future[Unit] = {
-    collection.save(counts).map { lastError =>
+    collection.insert(counts).map { lastError =>
       if(lastError.inError) {
         throw CountStorageException(counts)
       }
