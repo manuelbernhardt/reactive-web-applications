@@ -2,12 +2,12 @@ package actors
 
 import java.sql.Timestamp
 
-import akka.actor.{Actor, ActorLogging}
+import akka.actor.{Props, Actor, ActorLogging}
 import helpers.Database
 import generated.Tables._
 import org.jooq.impl.DSL._
 
-class CQRSEventHandler extends Actor with ActorLogging {
+class CQRSEventHandler(database: Database) extends Actor with ActorLogging {
 
   override def preStart(): Unit = {
     context.system.eventStream.subscribe(self, classOf[Event])
@@ -15,14 +15,14 @@ class CQRSEventHandler extends Actor with ActorLogging {
 
   def receive = {
     case UserRegistered(phoneNumber, userName, timestamp) =>
-      Database.withTransaction { sql =>
+      database.withTransaction { sql =>
         sql.insertInto(TWITTER_USER)
           .columns(TWITTER_USER.CREATED_ON, TWITTER_USER.PHONE_NUMBER, TWITTER_USER.TWITTER_USER_NAME)
           .values(new Timestamp(timestamp.getMillis), phoneNumber, userName)
           .execute()
       }
     case ClientEvent(phoneNumber, userName, MentionsSubscribed(timestamp), _) =>
-      Database.withTransaction { sql =>
+      database.withTransaction { sql =>
         sql.insertInto(MENTION_SUBSCRIPTIONS)
           .columns(MENTION_SUBSCRIPTIONS.USER_ID, MENTION_SUBSCRIPTIONS.CREATED_ON)
           .select(
@@ -37,7 +37,7 @@ class CQRSEventHandler extends Actor with ActorLogging {
           ).execute()
       }
     case ClientEvent(phoneNumber, userName, MentionReceived(id, created_on, from, text, timestamp), _) =>
-      Database.withTransaction { sql =>
+      database.withTransaction { sql =>
         sql.insertInto(MENTIONS)
           .columns(
             MENTIONS.USER_ID,
@@ -65,4 +65,8 @@ class CQRSEventHandler extends Actor with ActorLogging {
       }
   }
 
+}
+
+object CQRSEventHandler {
+  def props(database: Database) = Props(classOf[CQRSEventHandler], database)
 }

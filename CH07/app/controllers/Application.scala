@@ -1,9 +1,12 @@
 package controllers
 
+import javax.inject.Inject
+
 import helpers.Database
 import play.api._
 import play.api.Play.current
 import play.api.cache.Cache
+import play.api.i18n.{MessagesApi, I18nSupport}
 import play.api.libs.Crypto
 import play.api.mvc._
 import play.api.data._
@@ -17,7 +20,7 @@ import generated.tables.records._
 import scala.concurrent.Future
 
 
-object Application extends Controller {
+class Application @Inject() (val crypto: Crypto, val db: Database, val messagesApi: MessagesApi) extends Controller with I18nSupport {
 
   def index = Authenticated { request =>
     Ok(views.html.index(request.user.getFirstname))
@@ -38,11 +41,11 @@ object Application extends Controller {
           BadRequest(views.html.login(formWithErrors))
         },
       login =>
-        Database.query { sql =>
+        db.query { sql =>
           val user = Option(sql
             .selectFrom(USER)
             .where(USER.EMAIL.equal(login._1))
-            .and(USER.PASSWORD.equal(Crypto.encryptAES(login._2)))
+            .and(USER.PASSWORD.equal(crypto.sign(login._2)))
             .fetchOne())
 
           user.map { u =>

@@ -35,6 +35,8 @@ class SMSHandler(connection: ActorRef) extends Actor with ActorLogging {
       connection ! Write(ByteString("Registration successful\n"))
     case subscribed: MentionsSubscribed =>
       connection ! Write(ByteString("Mentions subscribed\n"))
+    case UnknownUser(number) =>
+      connection ! Write(ByteString(s"Unknown user $number\n"))
     case InvalidCommand(reason) =>
       connection ! Write(ByteString(reason + "\n"))
     case MentionReceived(id, created, from, text, _) =>
@@ -62,7 +64,8 @@ class SMSHandler(connection: ActorRef) extends Actor with ActorLogging {
         queryHandler ! MentionsToday(number)
       case "mentions past week" =>
         queryHandler ! MentionsPastWeek(number)
-        
+      case other =>
+        log.warning("Invalid message {}", other)
     }
   }
 

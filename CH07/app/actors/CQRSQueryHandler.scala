@@ -1,6 +1,6 @@
 package actors
 
-import akka.actor.Actor
+import akka.actor.{Props, Actor}
 import helpers.Database
 import generated.Tables._
 import org.jooq.impl.DSL._
@@ -10,7 +10,7 @@ import akka.pattern.pipe
 import scala.concurrent.Future
 import scala.util.control.NonFatal
 
-class CQRSQueryHandler extends Actor {
+class CQRSQueryHandler(database: Database) extends Actor {
 
   implicit val ec = context.dispatcher
 
@@ -24,7 +24,7 @@ class CQRSQueryHandler extends Actor {
   }
 
   def countMentions(phoneNumber: String): Future[Int] =
-    Database.query { sql =>
+    database.query { sql =>
       sql.selectCount().from(MENTIONS).where(
         MENTIONS.CREATED_ON.greaterOrEqual(currentDate().cast(PostgresDataType.TIMESTAMP))
         .and(MENTIONS.USER_ID.equal(
@@ -34,4 +34,7 @@ class CQRSQueryHandler extends Actor {
           )
       ).fetchOne().value1()
     }
+}
+object CQRSQueryHandler {
+  def props(database: Database) = Props(classOf[CQRSQueryHandler], database)
 }

@@ -1,4 +1,4 @@
-@(form: Form[(String, String)])
+@(form: Form[(String, String)])(implicit messages: Messages)
 
 @form.globalError.map { error =>
     <p>@error.message</p>

@@ -1,18 +1,23 @@
 package actors
 
 import akka.actor.{ActorLogging, Actor, Props}
+import helpers.Database
 
-class SMSService extends Actor with ActorLogging {
+class SMSService(database: Database) extends Actor with ActorLogging {
 
   override def preStart(): Unit = {
     context.actorOf(Props[SMSServer])
     context.actorOf(Props[CQRSCommandHandler], name = "commandHandler")
-    context.actorOf(Props[CQRSQueryHandler], name = "queryHandler")
-    context.actorOf(Props[CQRSEventHandler], name = "eventHandler")
+    context.actorOf(CQRSQueryHandler.props(database), name = "queryHandler")
+    context.actorOf(CQRSEventHandler.props(database), name = "eventHandler")
   }
 
   def receive = {
     case message =>
       log.info("Received {}", message)
   }
+}
+
+object SMSService {
+  def props(database: Database) = Props(classOf[SMSService], database)
 }

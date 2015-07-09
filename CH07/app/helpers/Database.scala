@@ -1,22 +1,22 @@
 package helpers
 
+import javax.inject.Inject
+
 import org.jooq.{DSLContext, SQLDialect}
 import org.jooq.impl.DSL
-import play.api.Play.current
-import play.api.db.DB
 import scala.concurrent.Future
 
-object Database {
+class Database @Inject() (db: play.api.db.Database) {
 
   def query[A](block: DSLContext => A): Future[A] = Future {
-    DB.withConnection { connection =>
+    db.withConnection { connection =>
       val sql = DSL.using(connection, SQLDialect.POSTGRES_9_4)
       block(sql)
     }
   }(Contexts.database)
 
   def withTransaction[A](block: DSLContext => A): Future[A] = Future {
-    DB.withTransaction { connection =>
+    db.withTransaction { connection =>
       val sql = DSL.using(connection, SQLDialect.POSTGRES_9_4)
       block(sql)
     }

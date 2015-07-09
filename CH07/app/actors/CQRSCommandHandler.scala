@@ -18,9 +18,10 @@ class CQRSCommandHandler extends PersistentActor with ActorLogging {
       persist(UserRegistered(phoneNumber, username))(handleEvent)
     case command: Command =>
       context.child(command.phoneNumber).map { reference =>
+        log.info("Forwarding message {} to {}", command, reference)
         reference forward command
       } getOrElse {
-        sender() ! "User unknown"
+        sender() ! UnknownUser(command.phoneNumber)
       }
   }
 
