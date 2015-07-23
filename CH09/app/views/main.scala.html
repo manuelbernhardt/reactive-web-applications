@@ -7,11 +7,11 @@
         <title>@title</title>
         <link rel="stylesheet" media="screen" href="@routes.Assets.versioned("stylesheets/main.css")">
         <link rel="shortcut icon" type="image/png" href="@routes.Assets.versioned("images/favicon.png")">
+        <script data-main="@routes.Assets.versioned("javascripts/application.js")"
+          src="@routes.WebJarAssets.at(WebJarAssets.locate("require.min.js"))"></script>
         @helper.javascriptRouter("jsRoutes")(
           routes.javascript.Application.text
         )
-        <script type='text/javascript' src='@routes.WebJarAssets.at(WebJarAssets.locate("jquery.min.js"))'></script>
-        <script type='text/javascript' src='@routes.Assets.versioned("javascripts/application.js")'></script>
     </head>
     <body>
         @content
