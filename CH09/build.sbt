@@ -1,8 +1,16 @@
+import com.typesafe.sbt.packager.archetypes.ServerLoader
+
 name := """ch09"""
 
 version := "1.0-SNAPSHOT"
 
-lazy val root = (project in file(".")).enablePlugins(PlayScala, SbtWeb)
+lazy val root = (project in file("."))
+  .enablePlugins(
+    PlayScala,
+    SbtWeb,
+    DebianPlugin,
+    JavaServerAppPackaging
+  )
 
 scalaVersion := "2.11.6"
 
@@ -15,8 +23,6 @@ libraryDependencies ++= Seq(
 
 resolvers += "scalaz-bintray" at "http://dl.bintray.com/scalaz/releases"
 
-// Play provides two styles of routers, one expects its actions to be injected, the
-// other, legacy style, accesses its actions statically.
 routesGenerator := InjectedRoutesGenerator
 
 pipelineStages := Seq(rjs)
@@ -24,3 +30,13 @@ pipelineStages := Seq(rjs)
 RjsKeys.mainModule := "application"
 
 RjsKeys.mainConfig := "application"
+
+maintainer := "Manuel Bernhardt <manuel@bernhardt.io>"
+
+packageSummary in Linux := "Chapter 9 of Reactive Web Applications"
+
+packageDescription := "This package installs the Play Application used as an example in Chpater 9 of the book Reactive Web Applications (Manning)"
+
+serverLoading in Debian := ServerLoader.Systemd
+
+dockerExposedPorts in Docker := Seq(9000, 9443)
