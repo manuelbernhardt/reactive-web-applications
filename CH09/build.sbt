@@ -7,12 +7,11 @@ version := "1.0-SNAPSHOT"
 lazy val root = (project in file("."))
   .enablePlugins(
     PlayScala,
-    SbtWeb,
     DebianPlugin,
     JavaServerAppPackaging
   )
 
-scalaVersion := "2.11.6"
+scalaVersion := "2.11.7"
 
 libraryDependencies ++= Seq(
   "org.webjars" %% "webjars-play" % "2.4.0-1",
@@ -20,8 +19,6 @@ libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "2.2.1" % "test",
   "org.scalatestplus" %% "play" % "1.4.0-M4" % "test"
 )
-
-resolvers += "scalaz-bintray" at "http://dl.bintray.com/scalaz/releases"
 
 routesGenerator := InjectedRoutesGenerator
 
