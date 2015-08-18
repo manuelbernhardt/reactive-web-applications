@@ -3,7 +3,6 @@ package services
 import org.scalatest.time.{Millis, Span}
 import org.scalatest.{ShouldMatchers, FlatSpec}
 import org.scalatest.concurrent.ScalaFutures
-
 import scala.concurrent.Future
 
 class DiceDrivenRandomNumberServiceSpec
@@ -21,9 +20,7 @@ class DiceDrivenRandomNumberServiceSpec
     )
 
     val diceService = new DiceService {
-      override def throwDice: Future[Int] = Future.successful {
-        4
-      }
+      override def throwDice: Future[Int] = Future.successful(4)
     }
     val randomNumberService =
       new DiceDrivenRandomNumberService(diceService)
@@ -32,6 +29,29 @@ class DiceDrivenRandomNumberServiceSpec
       result shouldBe(4)
     }
 
+  }
+
+  it should "be able to cope with problematic dice throws" in {
+    val overzealousDiceThrowingService = new DiceService {
+      var count = 0
+      override def throwDice: Future[Int] = {
+        count = count + 1
+        if(count % 2 == 0) {
+          Future.successful(4)
+        } else {
+          Future.failed(new RuntimeException(
+            "Dice fell of the table and the cat won't give it back"
+          ))
+        }
+      }
+    }
+
+    val randomNumberService =
+      new DiceDrivenRandomNumberService(overzealousDiceThrowingService)
+
+    whenReady(randomNumberService.generateRandomNumber) { result =>
+      result shouldBe(4)
+    }
   }
 
 }
