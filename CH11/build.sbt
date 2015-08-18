@@ -8,12 +8,13 @@ scalaVersion := "2.11.7"
 
 libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "2.2.1" % Test,
-  "org.scalatestplus" %% "play" % "1.4.0-M3" % Test
+  "org.scalatestplus" %% "play" % "1.4.0-M3" % Test,
+  "com.typesafe.akka" %% "akka-testkit" % "2.3.11" % Test
 )
 
 testOptions in Test += Tests.Argument(
   "-F",
-  sys.props.getOrElse("SCALING_FACTOR", default = "1")
+  sys.props.getOrElse("SCALING_FACTOR", default = "1.0")
 )
 
 routesGenerator := InjectedRoutesGenerator
