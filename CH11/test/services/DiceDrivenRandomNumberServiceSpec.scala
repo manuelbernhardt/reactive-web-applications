@@ -1,5 +1,7 @@
 package services
 
+import java.util.concurrent.atomic.AtomicInteger
+
 import org.scalatest.time.{Millis, Span}
 import org.scalatest.{ShouldMatchers, FlatSpec}
 import org.scalatest.concurrent.ScalaFutures
@@ -33,9 +35,9 @@ class DiceDrivenRandomNumberServiceSpec
 
   it should "be able to cope with problematic dice throws" in {
     val overzealousDiceThrowingService = new DiceService {
-      var count = 0
+      val counter = new AtomicInteger()
       override def throwDice: Future[Int] = {
-        count = count + 1
+        val count = counter.incrementAndGet()
         if(count % 2 == 0) {
           Future.successful(4)
         } else {
