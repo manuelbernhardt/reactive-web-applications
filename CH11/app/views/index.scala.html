@@ -1,7 +1,13 @@
-@(message: String)
+@()(implicit flash: Flash)
 
-@main("Welcome to Play") {
+@main("Welcome") {
 
-    @play20.welcome(message)
+    @flash.get("result").map { result =>
+        <p>@result</p>
+    }
+
+    <form method="POST" action="@routes.Application.compute()">
+        <button type="submit">Compute</button>
+    </form>
 
 }
