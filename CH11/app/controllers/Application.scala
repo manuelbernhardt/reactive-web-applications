@@ -3,23 +3,26 @@ package controllers
 import javax.inject.Inject
 
 import actors.RandomNumberFetcher
-import actors.RandomNumberFetcher.{RandomNumber, FetchRandomNumber}
+import actors.RandomNumberFetcher.{FetchRandomNumber, RandomNumber}
 import akka.actor.ActorSystem
+import akka.pattern.{AskTimeoutException, ask}
+import akka.routing.RoundRobinPool
 import akka.util.Timeout
-import play.api._
 import play.api.libs.ws.WSClient
 import play.api.mvc._
-import akka.pattern.ask
 
-import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext
+import scala.concurrent.duration._
 
-class Application @Inject() (ws: WSClient, system: ActorSystem, ec: ExecutionContext) extends Controller {
+
+class Application @Inject() (ws: WSClient,
+                             ec: ExecutionContext,
+                             system: ActorSystem) extends Controller {
 
   implicit val executionContext = ec
   implicit val timeout = Timeout(2000.millis)
 
-  val fetcher = system.actorOf(RandomNumberFetcher.props(ws))
+  val fetcher = system.actorOf(RandomNumberFetcher.props(ws).withRouter(RoundRobinPool(20)))
 
   def index = Action { implicit request =>
     Ok(views.html.index())
@@ -32,6 +35,9 @@ class Application @Inject() (ws: WSClient, system: ActorSystem, ec: ExecutionCon
           .flashing("result" -> s"The result is $r")
       case other =>
         InternalServerError
+    } recover {
+      case to: AskTimeoutException =>
+        Ok("Sorry, we are overloaded")
     }
   }
 
