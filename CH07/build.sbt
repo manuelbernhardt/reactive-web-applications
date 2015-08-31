@@ -20,7 +20,7 @@ libraryDependencies ++= Seq(
   "org.jooq" % "jooq-codegen-maven" % "3.6.0",
   "org.jooq" % "jooq-meta" % "3.6.0",
   "joda-time" % "joda-time" % "2.7",
-  "com.github.ironfish" %% "akka-persistence-mongo-casbah"  % "0.7.6-SNAPSHOT"
+  "com.github.ironfish" %% "akka-persistence-mongo-casbah"  % "0.7.6"
 )
 
 routesGenerator := InjectedRoutesGenerator
