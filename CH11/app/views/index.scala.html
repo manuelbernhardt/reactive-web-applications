@@ -6,8 +6,8 @@
         <p>@result</p>
     }
 
-    <form method="POST" action="@routes.Application.compute()">
-        <button type="submit">Compute</button>
-    </form>
+    @helper.form(routes.Application.compute()) {
+        <button type="submit">Get random number</button>
+    }
 
 }
