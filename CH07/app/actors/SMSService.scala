@@ -1,9 +1,13 @@
 package actors
 
-import akka.actor.{ActorLogging, Actor, Props}
-import helpers.Database
+import javax.inject.Inject
 
-class SMSService(database: Database) extends Actor with ActorLogging {
+import akka.actor.{ActorLogging, Actor, Props}
+import com.google.inject.AbstractModule
+import helpers.Database
+import play.api.libs.concurrent.AkkaGuiceSupport
+
+class SMSService @Inject() (database: Database) extends Actor with ActorLogging {
 
   override def preStart(): Unit = {
     context.actorOf(Props[SMSServer])
@@ -18,6 +22,7 @@ class SMSService(database: Database) extends Actor with ActorLogging {
   }
 }
 
-object SMSService {
-  def props(database: Database) = Props(classOf[SMSService], database)
+class SMSServiceModule extends AbstractModule with AkkaGuiceSupport {
+  def configure(): Unit =
+    bindActor[SMSService]("sms")
 }

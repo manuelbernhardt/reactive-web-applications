@@ -2,25 +2,28 @@ package controllers
 
 import javax.inject.Inject
 
-import helpers.Database
-import play.api._
-import play.api.Play.current
-import play.api.cache.Cache
-import play.api.i18n.{MessagesApi, I18nSupport}
-import play.api.libs.Crypto
-import play.api.mvc._
-import play.api.data._
-import play.api.data.Forms._
-import play.api.db._
-import org.jooq.SQLDialect
-import org.jooq.impl.DSL
 import generated.Tables._
 import generated.tables.records._
+import helpers.Database
+import org.jooq.SQLDialect
+import org.jooq.impl.DSL
+import play.api.Play.current
+import play.api.cache.Cache
+import play.api.data.Forms._
+import play.api.data._
+import play.api.db._
+import play.api.i18n.{I18nSupport, MessagesApi}
+import play.api.libs.Crypto
+import play.api.mvc._
 
 import scala.concurrent.Future
 
 
-class Application @Inject() (val crypto: Crypto, val db: Database, val messagesApi: MessagesApi) extends Controller with I18nSupport {
+class Application @Inject() (
+  val crypto: Crypto,
+  val db: Database,
+  val messagesApi: MessagesApi
+) extends Controller with I18nSupport {
 
   def index = Authenticated { request =>
     Ok(views.html.index(request.user.getFirstname))
