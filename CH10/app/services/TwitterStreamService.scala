@@ -41,7 +41,7 @@ class TwitterStreamService @Inject() (
 
     class SplitByTopic[A <: JsObject]
       extends FlexiRoute[A, SplitByTopicShape[A]](
-        new SplitByTopicShape, OperationAttributes.name("SplitByTopic")
+        new SplitByTopicShape, Attributes.name("SplitByTopic")
       ) {
       import FlexiRoute._
 
@@ -71,7 +71,7 @@ class TwitterStreamService @Inject() (
 
     credentials.map { case (consumerKey, requestToken) =>
 
-      implicit val fm = ActorFlowMaterializer()(system)
+      implicit val fm = ActorMaterializer()(system)
 
       val enumerator = buildTwitterEnumerator(
         consumerKey, requestToken, topicsAndDigestRate.keys.toSeq
