@@ -6,7 +6,6 @@ import actors.RandomNumberFetcher
 import actors.RandomNumberFetcher.{FetchRandomNumber, RandomNumber}
 import akka.actor.ActorSystem
 import akka.pattern.{AskTimeoutException, ask}
-import akka.routing.RoundRobinPool
 import akka.util.Timeout
 import play.api.libs.ws.WSClient
 import play.api.mvc._
@@ -22,7 +21,7 @@ class Application @Inject() (ws: WSClient,
   implicit val executionContext = ec
   implicit val timeout = Timeout(2000.millis)
 
-  val fetcher = system.actorOf(RandomNumberFetcher.props(ws).withRouter(RoundRobinPool(20)))
+  val fetcher = system.actorOf(RandomNumberFetcher.props(ws))
 
   def index = Action { implicit request =>
     Ok(views.html.index())
