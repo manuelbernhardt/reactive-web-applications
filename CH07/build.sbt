@@ -4,7 +4,7 @@ version := "1.0"
 
 lazy val `ch07` = (project in file(".")).enablePlugins(PlayScala)
 
-scalaVersion := "2.11.6"
+scalaVersion := "2.11.7"
 
 resolvers += "Spy Repository" at "http://files.couchbase.com/maven2"
 
