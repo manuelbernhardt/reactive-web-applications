@@ -15,6 +15,7 @@
   <logger name="play" level="INFO" />
   <logger name="akka" level="INFO" />
   <logger name="application" level="DEBUG" />
+  <logger name="actors" level="INFO" />
 
   <root level="ERROR">
     <appender-ref ref="STDOUT" />
