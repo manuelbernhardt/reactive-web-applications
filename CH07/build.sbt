@@ -14,9 +14,9 @@ libraryDependencies ++= Seq(
   ws,
   "com.github.mumoshu" %% "play2-memcached-play24" % "0.7.0",
   "org.postgresql" % "postgresql" % "9.4-1201-jdbc41",
-  "org.jooq" % "jooq" % "3.6.0",
-  "org.jooq" % "jooq-codegen-maven" % "3.6.0",
-  "org.jooq" % "jooq-meta" % "3.6.0",
+  "org.jooq" % "jooq" % "3.7.0",
+  "org.jooq" % "jooq-codegen-maven" % "3.7.0",
+  "org.jooq" % "jooq-meta" % "3.7.0",
   "joda-time" % "joda-time" % "2.7",
   "com.github.ironfish" %% "akka-persistence-mongo-casbah"  % "0.7.6"
 )
