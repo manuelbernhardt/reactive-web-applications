@@ -1,4 +1,4 @@
-lazy val scalaV = "2.11.7"
+lazy val scalaV = "2.11.6"
 
 lazy val `ch08` = (project in file(".")).settings(
   scalaVersion := scalaV,
