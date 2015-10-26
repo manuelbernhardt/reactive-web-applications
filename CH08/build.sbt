@@ -1,4 +1,4 @@
-lazy val scalaV = "2.11.6"
+lazy val scalaV = "2.11.7"
 
 lazy val `ch08` = (project in file(".")).settings(
   scalaVersion := scalaV,
@@ -11,9 +11,9 @@ lazy val `ch08` = (project in file(".")).settings(
     "org.webjars.bower" % "angular-growl-2" % "0.7.4",
     jdbc,
     "org.postgresql" % "postgresql" % "9.4-1201-jdbc41",
-    "org.jooq" % "jooq" % "3.6.0",
-    "org.jooq" % "jooq-codegen-maven" % "3.6.0",
-    "org.jooq" % "jooq-meta" % "3.6.0"
+    "org.jooq" % "jooq" % "3.7.0",
+    "org.jooq" % "jooq-codegen-maven" % "3.7.0",
+    "org.jooq" % "jooq-meta" % "3.7.0"
   ),
   WebKeys.importDirectly := true
 ).enablePlugins(PlayScala).dependsOn(client).aggregate(client)
