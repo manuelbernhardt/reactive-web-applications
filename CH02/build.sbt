@@ -21,3 +21,5 @@ resolvers += "Typesafe private" at "https://private-repo.typesafe.com/typesafe/m
 // Play provides two styles of routers, one expects its actions to be injected, the
 // other, legacy style, accesses its actions statically.
 routesGenerator := InjectedRoutesGenerator
+
+libraryDependencies += "com.ning" % "async-http-client" % "1.9.29"

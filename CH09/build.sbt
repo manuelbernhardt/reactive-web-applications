@@ -8,6 +8,7 @@ scalaVersion := "2.11.7"
 
 libraryDependencies ++= Seq(
   ws,
+  "com.ning" % "async-http-client" % "1.9.29",
   "com.typesafe.play.extras" %% "iteratees-extras" % "1.5.0",
   "com.typesafe.play" %% "play-streams-experimental" % "2.4.2",
   "com.typesafe.akka" % "akka-stream-experimental_2.11" % "1.0"

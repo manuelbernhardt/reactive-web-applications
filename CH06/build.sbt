@@ -15,3 +15,5 @@ libraryDependencies ++= Seq(
 )
 
 routesGenerator := InjectedRoutesGenerator
+
+libraryDependencies += "com.ning" % "async-http-client" % "1.9.29"

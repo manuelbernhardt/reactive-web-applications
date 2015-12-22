@@ -33,3 +33,5 @@ val generateJOOQTask = (sourceManaged, fullClasspath in Compile, runner in Compi
 generateJOOQ <<= generateJOOQTask
 
 unmanagedSourceDirectories in Compile += sourceManaged.value / "main/generated"
+
+libraryDependencies += "com.ning" % "async-http-client" % "1.9.29"
