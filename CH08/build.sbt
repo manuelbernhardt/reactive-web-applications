@@ -43,13 +43,11 @@ lazy val client = (project in file("modules/client")).settings(
 
 val generateJOOQ = taskKey[Seq[File]]("Generate JooQ classes")
 
-val generateJOOQTask = (sourceManaged, dependencyClasspath in Compile, runner in Compile, streams) map { (src, cp, r, s) =>
-  toError(r.run("org.jooq.util.GenerationTool", cp.files, Array("conf/chapter7.xml"), s.log))
+val generateJOOQTask = (sourceManaged, fullClasspath in Compile, runner in Compile, streams) map { (src, cp, r, s) =>
+  toError(r.run("org.jooq.util.GenerationTool", cp.files, Array("conf/mentions.xml"), s.log))
   ((src / "main/generated") ** "*.scala").get
 }
 
-logLevel in generateJOOQ := Level.Info
-
 generateJOOQ <<= generateJOOQTask
 
-sourceGenerators in Compile <+= generateJOOQTask
+ unmanagedSourceDirectories in Compile += sourceManaged.value / "main/generated"
