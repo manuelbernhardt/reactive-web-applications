@@ -1,48 +1,5 @@
-@(topicsAndRate: Map[String, Int], queryString: String)(implicit request: RequestHeader)
-
-<!DOCTYPE html>
-<html>
-  <head>
-    <title>Reactive Tweets</title>
-    <script src="//code.jquery.com/jquery-1.11.3.min.js"></script>
-    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
-  </head>
-  <body>
-  @if(topicsAndRate.nonEmpty) {
-    <div class="row">
-      @topicsAndRate.keys.map { topic =>
-        <div
-          id="@topic"
-          class="col-md-@{ 12 / (topicsAndRate.size) }">
-        </div>
-      }
-    </div>
-    <script type="text/javascript">
-
-      function appendTweet(topic, text) {
-        var tweet = document.createElement("p");
-        var message = document.createTextNode(text);
-        tweet.appendChild(message);
-        document.getElementById(topic).appendChild(tweet);
-      }
-
-      function connect(url) {
-        var tweetSocket = new WebSocket(url);
-        tweetSocket.onmessage = function (event) {
-          var data = JSON.parse(event.data);
-          data.tweets.forEach(function(tweet) {
-            appendTweet(data.topic, tweet.text);
-          });
-        };
-      }
-
-      connect(
-        '@routes.Application.stream().webSocketURL()?@queryString'
-      );
-
-    </script>
-  } else {
-    No topics selected.
-  }
-  </body>
-</html>
+@(message: String)(implicit request: RequestHeader)
+@main(message) {
+    <button id="button">Click me</button>
+    <div id="text"></div>
+}
