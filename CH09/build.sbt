@@ -1,6 +1,6 @@
 import com.typesafe.sbt.packager.archetypes.ServerLoader
 
-name := """ch09"""
+name := """ch10"""
 
 version := "1.0-SNAPSHOT"
 
@@ -30,9 +30,9 @@ RjsKeys.mainConfig := "application"
 
 maintainer := "Manuel Bernhardt <manuel@bernhardt.io>"
 
-packageSummary in Linux := "Chapter 9 of Reactive Web Applications"
+packageSummary in Linux := "Chapter 10 of Reactive Web Applications"
 
-packageDescription := "This package installs the Play Application used as an example in Chpater 9 of the book Reactive Web Applications (Manning)"
+packageDescription := "This package installs the Play Application used as an example in Chpater 10 of the book Reactive Web Applications (Manning)"
 
 serverLoading in Debian := ServerLoader.Systemd
 
