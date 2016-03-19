@@ -13,15 +13,15 @@ object Reporting {
 
   def computeYearlyAggregates(clickRepository: ClickRepository): Map[Long, Seq[(Month, Int)]] = {
     val pastClicks = clickRepository.getClicksSince(DateTime.now.minusYears(1))
-    pastClicks.groupBy(_.advertisementId).map {
-      case (advertisementId, clicks) =>
+    pastClicks.groupBy(_.advertisementId).mapValues {
+      case clicks =>
         val monthlyClicks = clicks
           .groupBy(click => Month(click.timestamp.getYear, click.timestamp.getMonthOfYear))
           .map { case (month, groupedClicks) =>
           month -> groupedClicks.length
         }.toSeq
-        advertisementId -> monthlyClicks
-    }.toMap
+        monthlyClicks
+    }
   }
 
   def computeYearlyAggregatesRefactored(clickRepository: ClickRepository): Map[Long, Seq[(Month, Int)]] = {
@@ -37,9 +37,7 @@ object Reporting {
 
     val pastClicks = clickRepository.getClicksSince(DateTime.now.minusYears(1))
 
-    pastClicks.groupBy(_.advertisementId).map {
-      case (advertisementId, clicks) => advertisementId -> computeMonthlyAggregates(clicks)
-    }.toMap
+    pastClicks.groupBy(_.advertisementId).mapValues(computeMonthlyAggregates)
 
   }
 
