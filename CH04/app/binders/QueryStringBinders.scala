@@ -7,10 +7,7 @@ object QueryStringBinders {
 
   implicit object LangQueryStringBinder extends QueryStringBindable[Lang] {
     override def bind(key: String, params: Map[String, Seq[String]]): Option[Either[String, Lang]] = {
-      val code = for {
-        codes <- params.get(key)
-        code <- codes.headOption
-      } yield code
+      val code = params.get(key).flatMap(_.headOption)
       code.map { c =>
         Lang.get(c).toRight(s"$c is not a valid language")
       }
