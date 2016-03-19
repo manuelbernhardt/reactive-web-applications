@@ -1,13 +1,13 @@
 package actors
 
 import actors.Storage._
-import akka.actor.{ActorRef, ActorLogging, Actor}
+import akka.actor.{Actor, ActorLogging, ActorRef}
 import akka.pattern.pipe
 import messages.{ReachStored, StoreReach}
 import org.joda.time.DateTime
 import reactivemongo.api.collections.bson.BSONCollection
 import reactivemongo.api.commands.WriteResult
-import reactivemongo.api.{MongoConnection, MongoDriver}
+import reactivemongo.api.{DefaultDB, MongoConnection, MongoDriver}
 import reactivemongo.bson._
 import reactivemongo.core.errors.ConnectionException
 
@@ -53,17 +53,16 @@ class Storage() extends Actor with ActorLogging {
   implicit val executionContext = context.dispatcher
 
   val driver: MongoDriver = new MongoDriver
-  var connection: MongoConnection = driver.connection(List("localhost"))
-  var db = connection.db(Database)
-  var collection: BSONCollection = db.collection[BSONCollection](ReachCollection)
+  var connection: MongoConnection = _
+  var db: DefaultDB = _
+  var collection: BSONCollection = _
+  obtainConnection()
 
   override def postRestart(reason: Throwable): Unit = {
     reason match {
       case ce: ConnectionException =>
         // try to obtain a brand new connection
-        connection = driver.connection(List("localhost"))
-        db = connection.db(Database)
-        collection = db.collection[BSONCollection](ReachCollection)
+        obtainConnection()
     }
     super.postRestart(reason)
   }
@@ -85,17 +84,22 @@ class Storage() extends Actor with ActorLogging {
           LastStorageError(lastError, tweetId, originalSender)
         }.recover {
           case _ =>
-            currentWrites = currentWrites.filterNot(_ == tweetId)
+            currentWrites = currentWrites - tweetId
         } pipeTo self
       }
     case LastStorageError(error, tweetId, client) =>
       if(error.inError) {
-        currentWrites = currentWrites.filterNot(_ == tweetId)
+        currentWrites = currentWrites - tweetId
       } else {
         client ! ReachStored(tweetId)
       }
     }
 
+  private def obtainConnection(): Unit = {
+    connection = driver.connection(List("localhost"))
+    db = connection.db(Database)
+    collection = db.collection[BSONCollection](ReachCollection)
+  }
 }
 
 object Storage {
