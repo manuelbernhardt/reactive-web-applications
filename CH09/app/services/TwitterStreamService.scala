@@ -24,16 +24,16 @@ class TwitterStreamService @Inject() (
   configuration: Configuration
 ) {
 
-  def stream(topicsAndDigestRate: Map[String, Int]):
-    Enumerator[JsValue] = {
+  def stream(topicsAndDigestRate: Map[String, Int]): Enumerator[JsValue] = {
 
     import FanOutShape._
 
     class SplitByTopicShape[A <: JsObject](
       _init: Init[A] = Name[A]("SplitByTopic")
     ) extends FanOutShape[A](_init) {
-      protected override def construct(i: Init[A]) =
-        new SplitByTopicShape(i)
+
+      protected override def construct(i: Init[A]) = new SplitByTopicShape(i)
+
       val topicOutlets = topicsAndDigestRate.keys.map { topic =>
         topic -> newOutlet[A]("out-" + topic)
       }.toMap
@@ -43,6 +43,7 @@ class TwitterStreamService @Inject() (
       extends FlexiRoute[A, SplitByTopicShape[A]](
         new SplitByTopicShape, Attributes.name("SplitByTopic")
       ) {
+
       import FlexiRoute._
 
       override def createRouteLogic(p: PortT) = new RouteLogic[A] {
@@ -94,7 +95,7 @@ class TwitterStreamService @Inject() (
         val merger = builder.add(Merge[JsValue](topicsAndDigestRate.size))
 
         builder.addEdge(in, splitter.in)
-        splitter.topicOutlets.zipWithIndex.map { case ((topic, port), index) =>
+        splitter.topicOutlets.zipWithIndex.foreach { case ((topic, port), index) =>
           val grouper = groupers(topic)
           val tagger = taggers(topic)
           builder.addEdge(port, grouper.inlet)
@@ -162,8 +163,8 @@ class TwitterStreamService @Inject() (
   private def credentials = for {
     apiKey <- configuration.getString("twitter.apiKey")
     apiSecret <- configuration.getString("twitter.apiSecret")
-    token <- configuration.getString("twitter.token")
-    tokenSecret <- configuration.getString("twitter.tokenSecret")
+    token <- configuration.getString("twitter.accessToken")
+    tokenSecret <- configuration.getString("twitter.accessTokenSecret")
   } yield
     (ConsumerKey(apiKey, apiSecret), RequestToken(token, tokenSecret))
 
