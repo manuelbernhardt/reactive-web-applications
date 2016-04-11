@@ -32,7 +32,7 @@ maintainer := "Manuel Bernhardt <manuel@bernhardt.io>"
 
 packageSummary in Linux := "Chapter 10 of Reactive Web Applications"
 
-packageDescription := "This package installs the Play Application used as an example in Chpater 10 of the book Reactive Web Applications (Manning)"
+packageDescription := "This package installs the Play Application used as an example in Chapter 10 of the book Reactive Web Applications (Manning)"
 
 serverLoading in Debian := ServerLoader.Systemd
 
