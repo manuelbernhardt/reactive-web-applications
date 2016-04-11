@@ -31,7 +31,7 @@ class Quiz @Inject() (vocabulary: VocabularyService) extends Controller {
 
   def quizEndpoint(sourceLang: Lang, targetLang: Lang) = WebSocket.acceptWithActor[String, String] { request =>
     out =>
-      QuizActor.props(sourceLang, targetLang, out, vocabulary)
+      QuizActor.props(out, sourceLang, targetLang, vocabulary)
   }
 
 }
@@ -62,6 +62,6 @@ class QuizActor(out: ActorRef, sourceLang: Lang, targetLang: Lang, vocabulary: V
 
 object QuizActor {
 
-  def props(sourceLang: Lang, targetLang: Lang, out: ActorRef, vocabulary: VocabularyService): Props =
+  def props(out: ActorRef, sourceLang: Lang, targetLang: Lang, vocabulary: VocabularyService): Props =
     Props(classOf[QuizActor], out, sourceLang, targetLang, vocabulary)
 }
