@@ -38,7 +38,7 @@ object TwitterStreamer {
 
   def subscribe(out: ActorRef): Unit = {
 
-    if (broadcastEnumerator == None) {
+    if (broadcastEnumerator.isEmpty) {
       init()
     }
 
@@ -55,7 +55,7 @@ object TwitterStreamer {
         twitterClient
     }
 
-    broadcastEnumerator.map { enumerator =>
+    broadcastEnumerator.foreach { enumerator =>
       enumerator run twitterClient
     }
     subscribers += out
@@ -70,7 +70,7 @@ object TwitterStreamer {
   }
 
   def subscribeNode: Enumerator[JsObject] = {
-    if (broadcastEnumerator == None) {
+    if (broadcastEnumerator.isEmpty) {
       TwitterStreamer.init()
     }
 
