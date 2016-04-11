@@ -3,7 +3,7 @@
   <jdbc>
     <driver>org.postgresql.Driver</driver>
     <url>jdbc:postgresql://localhost/chapter7</url>
-    <user>manu</user>
+    <user>user</user>
     <password>secret</password>
   </jdbc>
   <generator>
