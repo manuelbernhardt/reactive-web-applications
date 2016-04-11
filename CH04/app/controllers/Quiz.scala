@@ -8,9 +8,9 @@ import play.api.mvc._
 import play.api.i18n.Lang
 import services.VocabularyService
 
-class Quizz @Inject() (vocabulary: VocabularyService) extends Controller {
+class Quiz @Inject() (vocabulary: VocabularyService) extends Controller {
 
-  def quizz(sourceLanguage: Lang, targetLanguage: Lang) = Action {
+  def quiz(sourceLanguage: Lang, targetLanguage: Lang) = Action {
     vocabulary.findRandomVocabulary(sourceLanguage, targetLanguage).map { v =>
       Ok(v.word)
     } getOrElse {
@@ -29,14 +29,14 @@ class Quizz @Inject() (vocabulary: VocabularyService) extends Controller {
     }
   }
 
-  def quizzEndpoint(sourceLang: Lang, targetLang: Lang) = WebSocket.acceptWithActor[String, String] { request =>
+  def quizEndpoint(sourceLang: Lang, targetLang: Lang) = WebSocket.acceptWithActor[String, String] { request =>
     out =>
-      QuizzActor.props(sourceLang, targetLang, out, vocabulary)
+      QuizActor.props(sourceLang, targetLang, out, vocabulary)
   }
 
 }
 
-class QuizzActor(out: ActorRef, sourceLang: Lang, targetLang: Lang, vocabulary: VocabularyService) extends Actor {
+class QuizActor(out: ActorRef, sourceLang: Lang, targetLang: Lang, vocabulary: VocabularyService) extends Actor {
 
   private var word = ""
 
@@ -60,8 +60,8 @@ class QuizzActor(out: ActorRef, sourceLang: Lang, targetLang: Lang, vocabulary: 
 
 }
 
-object QuizzActor {
+object QuizActor {
 
   def props(sourceLang: Lang, targetLang: Lang, out: ActorRef, vocabulary: VocabularyService): Props =
-    Props(classOf[QuizzActor], out, sourceLang, targetLang, vocabulary)
+    Props(classOf[QuizActor], out, sourceLang, targetLang, vocabulary)
 }

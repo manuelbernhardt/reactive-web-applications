@@ -1,5 +1,5 @@
 PUT         /import/word/:sourceLang/:word/:targetLang/:translation        controllers.Import.importWord(sourceLang: play.api.i18n.Lang, word, targetLang: play.api.i18n.Lang, translation)
 
-GET         /quizz/:sourceLang                                             controllers.Quizz.quizz(sourceLang: play.api.i18n.Lang, targetLang: play.api.i18n.Lang)
-POST        /quizz/:sourceLang/check/:word                                 controllers.Quizz.check(sourceLang: play.api.i18n.Lang, word, targetLang: play.api.i18n.Lang, translation)
-GET         /quizz/interactive/:sourceLang/:targetLang                     controllers.Quizz.quizzEndpoint(sourceLang: play.api.i18n.Lang, targetLang: play.api.i18n.Lang)
+GET         /quizz/:sourceLang                                             controllers.Quiz.quiz(sourceLang: play.api.i18n.Lang, targetLang: play.api.i18n.Lang)
+POST        /quizz/:sourceLang/check/:word                                 controllers.Quiz.check(sourceLang: play.api.i18n.Lang, word, targetLang: play.api.i18n.Lang, translation)
+GET         /quizz/interactive/:sourceLang/:targetLang                     controllers.Quiz.quizEndpoint(sourceLang: play.api.i18n.Lang, targetLang: play.api.i18n.Lang)
