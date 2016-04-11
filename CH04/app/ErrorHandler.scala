@@ -5,7 +5,6 @@ import play.api.mvc._
 import play.api.mvc.Results._
 import play.api.routing.Router
 import scala.concurrent._
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
 
 class ErrorHandler @Inject() (
   env: Environment,
@@ -15,7 +14,7 @@ class ErrorHandler @Inject() (
     extends DefaultHttpErrorHandler(env, config, sourceMapper, router) {
 
   override protected def onNotFound(request: RequestHeader, message: String): Future[Result] = {
-    Future {
+    Future.successful {
       NotFound("Could not find " + request)
     }
   }
