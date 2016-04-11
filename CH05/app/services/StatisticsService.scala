@@ -61,9 +61,9 @@ class DefaultStatisticsService(statisticsRepository: StatisticsRepository, twitt
       case CountStorageException(countsToStore) =>
         throw StatisticsServiceFailed("We couldn't save the statistics to our database. Next time it will work!")
       case CountRetrievalException(user, cause) =>
-        throw StatisticsServiceFailed("We have a problem with our database. Sorry!")
-      case TwitterServiceException(cause) =>
-        throw StatisticsServiceFailed("We have a problem contacting Twitter. Sorry!")
+        throw StatisticsServiceFailed("We have a problem with our database. Sorry!", cause)
+      case TwitterServiceException(message) =>
+        throw StatisticsServiceFailed(s"We have a problem contacting Twitter: $message")
       case NonFatal(t) =>
         throw StatisticsServiceFailed("We have an unknown problem. Sorry!")
     }
@@ -82,4 +82,16 @@ class DefaultStatisticsService(statisticsRepository: StatisticsRepository, twitt
 
 }
 
-case class StatisticsServiceFailed(message: String) extends RuntimeException(message)
+class StatisticsServiceFailed(cause: Throwable)
+  extends RuntimeException(cause) {
+    def this(message: String) = this(new RuntimeException(message))
+    def this(message: String, cause: Throwable) =
+      this(new RuntimeException(message, cause))
+}
+object StatisticsServiceFailed {
+  def apply(message: String): StatisticsServiceFailed =
+    new StatisticsServiceFailed(message)
+  def apply(message: String, cause: Throwable):
+    StatisticsServiceFailed =
+      new StatisticsServiceFailed(message, cause)
+}
