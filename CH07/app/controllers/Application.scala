@@ -101,7 +101,7 @@ object Authenticated extends ActionBuilder[AuthenticatedRequest] with Results {
       DB.withConnection { connection =>
         val sql = DSL.using(connection, SQLDialect.POSTGRES_9_4)
         val user = Option(sql.selectFrom[UserRecord](USER).where(USER.ID.equal(id)).fetchOne())
-        user.map { u =>
+        user.foreach { u =>
           Cache.set(u.getId.toString, u)
         }
         user

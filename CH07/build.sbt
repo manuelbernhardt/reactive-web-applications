@@ -25,8 +25,14 @@ routesGenerator := InjectedRoutesGenerator
 
 val generateJOOQ = taskKey[Seq[File]]("Generate JooQ classes")
 
-val generateJOOQTask = (sourceManaged, fullClasspath in Compile, runner in Compile, streams) map { (src, cp, r, s) =>
-  toError(r.run("org.jooq.util.GenerationTool", cp.files, Array("conf/mentions.xml"), s.log))
+val generateJOOQTask = (sourceManaged, dependencyClasspath in Compile,
+  runner in Compile, streams) map { (src, cp, r, s) =>
+  val outputDir = (src / "jooq").getPath
+  toError(r.run(
+    "org.jooq.util.GenerationTool",
+    cp.files,
+    Array("conf/chapter7.xml"),
+    s.log))
   ((src / "main/generated") ** "*.scala").get
 }
 
