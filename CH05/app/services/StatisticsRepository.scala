@@ -63,7 +63,7 @@ class MongoStatisticsRepository @Inject() (reactiveMongo: ReactiveMongoApi) exte
       .map { counts => counts getOrElse StoredCounts(DateTime.now, userName, 0, 0) }
   } recover {
     case NonFatal(t) =>
-      throw new CountRetrievalException(userName, t)
+      throw CountRetrievalException(userName, t)
   }
 }
 
