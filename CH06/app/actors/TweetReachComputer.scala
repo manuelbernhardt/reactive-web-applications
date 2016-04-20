@@ -29,9 +29,10 @@ class TweetReachComputer(userFollowersCounter: ActorRef, storage: ActorRef) exte
 
     case ComputeReach(tweetId) =>
       log.info("Starting to compute tweet reach for tweet {}", tweetId)
+      val originalSender = sender()
       fetchRetweets(tweetId, sender()).recover {
         case NonFatal(t) =>
-          RetweetFetchingFailed(tweetId, t, sender())
+          RetweetFetchingFailed(tweetId, t, originalSender)
       } pipeTo self
 
     case fetchedRetweets: FetchedRetweet =>
