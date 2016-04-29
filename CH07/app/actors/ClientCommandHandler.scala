@@ -73,7 +73,7 @@ class ClientCommandHandler(phoneNumber: String, userName: String) extends Persis
       persist(MentionAcknowledged(id))(handleEvent)
 
     case ConnectUser(_) =>
-      log.info("{}connected, about to send it {} mentions", phoneNumber, unacknowledgedMentions.size)
+      log.info("{} connected, about to send it {} mentions", phoneNumber, unacknowledgedMentions.size)
       subscribedSMSHandler = Some(sender())
       unacknowledgedMentions.foreach { mention =>
         subscribedSMSHandler.foreach { handler =>
