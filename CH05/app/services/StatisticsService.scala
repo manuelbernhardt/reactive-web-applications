@@ -65,7 +65,7 @@ class DefaultStatisticsService(statisticsRepository: StatisticsRepository, twitt
       case TwitterServiceException(message) =>
         throw StatisticsServiceFailed(s"We have a problem contacting Twitter: $message")
       case NonFatal(t) =>
-        throw StatisticsServiceFailed("We have an unknown problem. Sorry!")
+        throw StatisticsServiceFailed("We have an unknown problem. Sorry!", t)
     }
 
   }
