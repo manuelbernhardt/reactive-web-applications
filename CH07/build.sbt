@@ -12,6 +12,7 @@ libraryDependencies ++= Seq(
   jdbc,
   cache,
   ws,
+  evolutions,
   "com.github.mumoshu" %% "play2-memcached-play24" % "0.7.0",
   "org.postgresql" % "postgresql" % "9.4-1201-jdbc41",
   "org.jooq" % "jooq" % "3.7.0",
