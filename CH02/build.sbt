@@ -23,5 +23,3 @@ resolvers += "Typesafe private" at "https://private-repo.typesafe.com/typesafe/m
 routesGenerator := InjectedRoutesGenerator
 
 libraryDependencies += "com.ning" % "async-http-client" % "1.9.29"
-
-libraryDependencies += "com.typesafe.play.extras" %% "iteratees-extras" % "1.5.0"
