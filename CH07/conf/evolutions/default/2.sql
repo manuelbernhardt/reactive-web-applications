@@ -20,7 +20,7 @@ CREATE TABLE "mention_subscriptions" (
   id bigserial primary key,
   created_on timestamp with time zone NOT NULL,
   user_id bigint NOT NULL
-)
+);
 
 # --- !Downs
 
